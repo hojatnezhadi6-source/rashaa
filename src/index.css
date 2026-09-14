@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-obsidian: #080909;
+    --color-charcoal: #111313;
+    --color-ivory: #F4F0E8;
+    --color-gold: #C9A96A;
+    --color-gold-bright: #DFBA73;
+    --color-gold-muted: rgba(201, 169, 106, 0.2);
+    --color-grey-soft: #9B9B95;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: #080909;
+    color: #F4F0E8;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+
+  [dir="rtl"] {
+    font-family: 'Vazirmatn', 'Shabnam', 'Sahel', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  [dir="rtl"] .font-serif-display,
+  [dir="rtl"] .font-editorial,
+  [dir="rtl"] .font-farsi-title {
+    font-family: 'Vazirmatn', 'Shabnam', system-ui, sans-serif;
+    letter-spacing: 0 !important;
+    word-spacing: 0em;
+  }
+
+  /* Prevent artificial mechanical oblique skew on Persian/Arabic text */
+  [dir="rtl"] .italic,
+  [dir="rtl"] em {
+    font-style: normal !important;
+  }
+}
+
+.font-serif-display {
+  font-family: 'Georgia', 'Cormorant Garamond', 'Playfair Display', serif;
+}
+
+.font-editorial {
+  font-family: 'Instrument Serif', 'Georgia', 'Cormorant Garamond', serif;
+}
+
+.font-sans-luxury {
+  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+}
+
+.font-farsi {
+  font-family: 'Shabnam', 'Vazirmatn', 'Sahel', system-ui, sans-serif;
+}
+
+.font-farsi-title {
+  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif;
+  letter-spacing: normal !important;
+}
+
+.font-farsi-sahel {
+  font-family: 'Sahel', 'Shabnam', system-ui, sans-serif !important;
+}
+
+.font-farsi-vazir {
+  font-family: 'Vazirmatn', 'Shabnam', system-ui, sans-serif !important;
+}
+
+.font-farsi-amiri {
+  font-family: 'Amiri', 'Georgia', serif !important;
+}
+
+/* Custom luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080909;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #202424;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C9A96A;
+}
+
+/* Luxury Glow, Glass & Mesh Utility Classes */
+.luxury-glass {
+  background: rgba(17, 19, 19, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(244, 240, 232, 0.08);
+}
+
+.luxury-glass-gold {
+  background: linear-gradient(135deg, rgba(20, 22, 22, 0.85) 0%, rgba(12, 14, 14, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(201, 169, 106, 0.22);
+}
+
+.luxury-card {
+  background: linear-gradient(180deg, rgba(20, 23, 23, 0.7) 0%, rgba(12, 14, 14, 0.85) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 240, 232, 0.08);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-card:hover {
+  border-color: rgba(201, 169, 106, 0.45);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.8), 0 0 30px -4px rgba(201, 169, 106, 0.15);
+  transform: translateY(-3px);
+}
+
+.luxury-glow-gold {
+  box-shadow: 0 0 50px -10px rgba(201, 169, 106, 0.3);
+}
+
+.luxury-glow-subtle {
+  box-shadow: 0 0 35px -5px rgba(201, 169, 106, 0.15);
+}
+
+/* Shimmer gold text effect */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF6E5 0%, #E8CA8C 40%, #C9A96A 75%, #F5DFB5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-silver-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E2E2DC 50%, #9B9B95 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Atmospheric Ambient Lighting Gradients */
+.bg-ambient-radial {
+  background: radial-gradient(circle at 50% 0%, rgba(201, 169, 106, 0.15) 0%, rgba(201, 169, 106, 0.03) 45%, transparent 70%);
+}
+
+.bg-ambient-spotlight {
+  background: radial-gradient(ellipse at center, rgba(201, 169, 106, 0.12) 0%, transparent 65%);
+}
+
+.bg-ambient-orb {
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Subtle Animated Shimmer & Pulse */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer-sweep 3.5s infinite;
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
+/* Hide scrollbars for carousel when needed */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================================================
+   Refined Slate & Soft Luxury Light Option (Gentle, Non-Glaring)
+   ========================================================================== */
+
+.theme-light,
+.theme-light body {
+  background-color: #121517 !important;
+  color: #EAE6DF !important;
+}
+
+.theme-light .luxury-glass {
+  background: rgba(26, 30, 34, 0.85) !important;
+  border-color: rgba(201, 169, 106, 0.3) !important;
+}
+
+
+
+
