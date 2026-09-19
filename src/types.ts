@@ -280,7 +280,8 @@ export interface LeadApplication {
   estimatedScore?: number;
 }
 
-export type PersianFontOption = 'shabnam' | 'vazir' | 'sahel' | 'amiri';
+export type PersianFontOption = 'peyda' | 'estedad' | 'shabnam' | 'vazir' | 'sahel' | 'amiri';
+export type EnglishFontOption = 'sora' | 'playfair' | 'manrope' | 'cormorant';
 
 export interface SiteConfig {
   heroHeadline1En: string;
@@ -292,12 +293,15 @@ export interface SiteConfig {
   badgeEn: string;
   badgeFa: string;
   phoneIran: string;
-  phoneDubai: string;
-  phoneLondon: string;
+  phoneDubai?: string;
+  phoneLondon?: string;
   whatsappNumber: string;
   consultationEmail: string;
   heroFrames: HeroFrameItem[];
+  persianFont?: PersianFontOption;
   persianFontTheme?: PersianFontOption;
+  englishFont?: EnglishFontOption;
+  englishFontTheme?: EnglishFontOption;
   destinations?: Destination[];
   services?: ServiceItem[];
   whyRashaPrinciples?: WhyRashaPrinciple[];

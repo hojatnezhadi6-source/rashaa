@@ -149,49 +149,23 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* Global Hubs Ticker */}
-        <div className="py-8 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-2 text-[#C9A96A] font-mono text-[11px] uppercase tracking-widest">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{language === 'fa' ? 'دفاتر و میزهای بین‌المللی:' : 'Advisory Desks:'}</span>
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#9B9B95]">
-            {[
-              { en: 'London', fa: 'لندن' },
-              { en: 'Toronto', fa: 'تورنتو' },
-              { en: 'Vancouver', fa: 'ونکوور' },
-              { en: 'Dubai', fa: 'دبی' },
-              { en: 'Berlin', fa: 'برلین' },
-              { en: 'Sydney', fa: 'سیدنی' },
-              { en: 'Melbourne', fa: 'ملبورن' },
-              { en: 'Madrid', fa: 'مادرید' },
-              { en: 'Lisbon', fa: 'لیسبون' },
-              { en: 'Paris', fa: 'پاریس' },
-            ].map((city) => (
-              <span key={city.en} className="hover:text-[#F4F0E8] transition-colors">
-                {language === 'fa' ? city.fa : city.en}
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* Legal Disclaimer & Bottom Bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-6 text-[11px] text-[#9B9B95]/70">
           <p className="max-w-2xl leading-relaxed">
             {language === 'fa'
-              ? 'راشا مهاجرت یک موسسه بین‌المللی مشاوره حقوقی و مهاجرت است. اطلاعات ارائه شده در این سامانه به منظور راهنمایی راهبردی متقاضیان و با نظارت وکلای رسمی و معتبر حوزه‌های قضایی مربوطه تنظیم شده است.'
-              : 'RASHA MOHAJERAT is a private international immigration and global mobility consultancy. Information provided across this platform is for strategic planning and executive guidance, operating in coordination with licensed legal attorneys and statutory authorities in respective jurisdictions.'}
+              ? 'راشا مهاجرت؛ همراه شما در برنامه‌ریزی دقیق، انتخاب بهترین مقصد و اخذ اقامت با همکاری مشاوران و وکلای رسمی مهاجرتی.'
+              : 'RASHA MOHAJERAT provides strategic global mobility guidance, helping applicants select optimal pathways in compliance with statutory immigration regulations.'}
           </p>
 
-          <div className="flex items-center gap-6">
-            <span>© {new Date().getFullYear()} RASHA MOHAJERAT. {language === 'fa' ? 'تمامی حقوق محفوظ است.' : 'All rights reserved.'}</span>
+          <div className="flex items-center gap-4">
+            <span>© {new Date().getFullYear()} راشا مهاجرت. {language === 'fa' ? 'تمامی حقوق محفوظ است.' : 'All rights reserved.'}</span>
             {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
                 className="hover:text-[#C9A96A] text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer border border-white/10 px-2.5 py-1 rounded"
               >
                 <Shield className="w-3 h-3 text-[#C9A96A]" />
-                <span>{language === 'fa' ? 'ورود مدیریت' : 'Admin'}</span>
+                <span>{language === 'fa' ? 'مدیریت' : 'Admin'}</span>
               </button>
             )}
             <button

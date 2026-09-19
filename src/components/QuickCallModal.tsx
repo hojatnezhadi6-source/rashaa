@@ -58,171 +58,127 @@ export const QuickCallModal: React.FC<QuickCallModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#080909]/85 backdrop-blur-xl animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-2xl bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden"
+        className="relative w-full max-w-lg bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C9A96A] to-transparent" />
 
         {/* Modal Header */}
-        <div className="p-6 sm:p-8 border-b border-white/[0.08] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C9A96A]/10 border border-[#C9A96A]/40 flex items-center justify-center text-[#C9A96A]">
-              <PhoneCall className="w-5 h-5 animate-pulse" />
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#C9A96A]/10 border border-[#C9A96A]/40 flex items-center justify-center text-[#C9A96A]">
+              <PhoneCall className="w-4 h-4 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-mono tracking-widest text-[#C9A96A]">
-                  {language === 'fa' ? 'پاسخگویی فوری و ۲۴ ساعته' : 'Instant Hotline & Callback'}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase font-mono tracking-wider text-[#C9A96A]">
+                  {language === 'fa' ? 'پاسخگویی فوری' : 'Instant Callback'}
                 </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-serif-display font-light text-[#F4F0E8]">
-                {language === 'fa' ? 'تماس سریع و مشاوره تلفنی فوری' : 'Direct Priority Call Desk'}
+              <h3 className="text-base sm:text-lg font-serif-display font-medium text-[#F4F0E8]">
+                {language === 'fa' ? 'تماس سریع و مشاوره تلفنی' : 'Priority Call Desk'}
               </h3>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-[#9B9B95] hover:text-[#F4F0E8] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-[#9B9B95] hover:text-[#F4F0E8] transition-colors cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 sm:p-8 space-y-8 max-h-[80vh] overflow-y-auto">
+        <div className="p-4 sm:p-5 space-y-4 max-h-[75vh] overflow-y-auto">
           {submitted ? (
-            <div className="py-8 text-center space-y-5 animate-in zoom-in-95 duration-300">
-              <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="py-6 text-center space-y-4 animate-in zoom-in-95 duration-300">
+              <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <div className="space-y-2">
-                <h4 className="text-2xl font-serif-display text-[#F4F0E8]">
+              <div className="space-y-1.5">
+                <h4 className="text-lg font-serif-display text-[#F4F0E8]">
                   {language === 'fa' ? 'درخواست تماس فوری شما ثبت شد' : 'Instant Callback Scheduled'}
                 </h4>
-                <p className="text-sm text-[#9B9B95] max-w-md mx-auto leading-relaxed">
+                <p className="text-xs text-[#9B9B95] max-w-sm mx-auto leading-relaxed">
                   {language === 'fa'
                     ? `مشاور ارشد راشا مهاجرت ظرف حداکثر ۱۵ دقیقه با شماره ${phone} تماس خواهد گرفت.`
                     : `A senior immigration counsel will connect with you via ${phone} in under 15 minutes.`}
                 </p>
-                <div className="inline-block mt-3 px-4 py-2 rounded-lg bg-white/[0.04] border border-[#C9A96A]/30 text-xs font-mono text-[#C9A96A]">
-                  {language === 'fa' ? 'کد پیگیری درخواست:' : 'Reference Code:'} {trackingCode}
+                <div className="inline-block mt-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-[#C9A96A]/30 text-[11px] font-mono text-[#C9A96A]">
+                  {language === 'fa' ? 'کد پیگیری:' : 'Ref Code:'} {trackingCode}
                 </div>
               </div>
 
-              <div className="pt-4 flex flex-wrap justify-center gap-3">
+              <div className="pt-2 flex flex-wrap justify-center gap-2.5">
                 <a
-                  href={`https://wa.me/971501234567?text=${encodeURIComponent(
-                    `سلام، من درخواست تماس فوری داده‌ام (کد پیگیری: ${trackingCode}). مایل به گفتگو درباره ${topic} هستم.`
+                  href={`https://wa.me/989120000000?text=${encodeURIComponent(
+                    `سلام، من درخواست تماس فوری داده‌ام (کد پیگیری: ${trackingCode}). موضوع مشاوره: ${topic}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center gap-2 shadow-lg"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{language === 'fa' ? 'ارتباط مستقیم در واتس‌اپ' : 'Chat Directly on WhatsApp'}</span>
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>{language === 'fa' ? 'ارتباط در واتس‌اپ' : 'Chat on WhatsApp'}</span>
                 </a>
 
                 <button
                   onClick={handleReset}
-                  className="px-6 py-3 bg-white/[0.08] hover:bg-white/[0.12] text-[#F4F0E8] rounded-xl text-xs font-medium cursor-pointer"
+                  className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-[#F4F0E8] rounded-lg text-xs font-medium cursor-pointer"
                 >
-                  {language === 'fa' ? 'متوجه شدم / بستن' : 'Done / Close'}
+                  {language === 'fa' ? 'بستن' : 'Close'}
                 </button>
               </div>
             </div>
           ) : (
             <>
-              {/* Direct Hotlines Section */}
-              <div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-[#C9A96A] font-semibold block mb-3">
-                  {language === 'fa' ? 'شماره‌های مستقیم مشاوران بین‌المللی' : 'Direct International Advisory Desks'}
-                </span>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  <a
-                    href="tel:+982188990011"
-                    className="p-4 rounded-xl bg-[#080909] border border-white/[0.08] hover:border-[#C9A96A] transition-all group flex flex-col gap-1.5"
-                  >
-                    <div className="flex items-center justify-between text-xs text-[#9B9B95]">
-                      <span className="font-mono text-[#C9A96A]">دفتر مرکزی تهران</span>
-                      <PhoneCall className="w-3.5 h-3.5 group-hover:text-[#C9A96A]" />
-                    </div>
-                    <span className="text-sm font-mono text-[#F4F0E8] font-bold dir-ltr">
-                      021-8899 0011
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-mono">پاسخگویی فوری</span>
-                  </a>
-
-                  <a
-                    href="tel:+97143987720"
-                    className="p-4 rounded-xl bg-[#080909] border border-white/[0.08] hover:border-[#C9A96A] transition-all group flex flex-col gap-1.5"
-                  >
-                    <div className="flex items-center justify-between text-xs text-[#9B9B95]">
-                      <span className="font-mono text-[#C9A96A]">دفتر دبی (امارات)</span>
-                      <PhoneCall className="w-3.5 h-3.5 group-hover:text-[#C9A96A]" />
-                    </div>
-                    <span className="text-sm font-mono text-[#F4F0E8] font-bold dir-ltr">
-                      +971 4 398 7720
-                    </span>
-                    <span className="text-[10px] text-[#9B9B95]">ساعات کاری خلیج فارس</span>
-                  </a>
-
-                  <a
-                    href="tel:+442079460912"
-                    className="p-4 rounded-xl bg-[#080909] border border-white/[0.08] hover:border-[#C9A96A] transition-all group flex flex-col gap-1.5"
-                  >
-                    <div className="flex items-center justify-between text-xs text-[#9B9B95]">
-                      <span className="font-mono text-[#C9A96A]">دفتر لندن (انگلستان)</span>
-                      <PhoneCall className="w-3.5 h-3.5 group-hover:text-[#C9A96A]" />
-                    </div>
-                    <span className="text-sm font-mono text-[#F4F0E8] font-bold dir-ltr">
-                      +44 20 7946 0912
-                    </span>
-                    <span className="text-[10px] text-[#9B9B95]">ساعات اداری لندن</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Instant WhatsApp Connect */}
-              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                    <MessageCircle className="w-5 h-5" />
+              {/* Direct Quick Connection Cards */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <a
+                  href="tel:+982188990011"
+                  className="p-3 rounded-xl bg-[#080909] border border-white/[0.08] hover:border-[#C9A96A] transition-all group flex flex-col gap-1"
+                >
+                  <div className="flex items-center justify-between text-[11px] text-[#9B9B95]">
+                    <span className="text-[#C9A96A] font-semibold">{language === 'fa' ? 'تماس مستقیم تلفنی' : 'Hotline'}</span>
+                    <PhoneCall className="w-3 h-3 text-emerald-400" />
                   </div>
-                  <div>
-                    <span className="text-xs font-semibold text-[#F4F0E8] block">
-                      {language === 'fa' ? 'گفتگوی مستقیم ۲۴ ساعته در واتس‌اپ' : 'Direct WhatsApp Concierge'}
-                    </span>
-                    <span className="text-[11px] text-[#9B9B95]">
-                      {language === 'fa' ? 'ارسال سریع پیام صوتی یا مدارک به مشاوران' : 'Instant messaging & document forwarding'}
-                    </span>
-                  </div>
-                </div>
+                  <span className="text-xs sm:text-sm font-mono text-[#F4F0E8] font-bold dir-ltr">
+                    021-8899 0011
+                  </span>
+                  <span className="text-[10px] text-emerald-400/80">{language === 'fa' ? 'پاسخگویی فوری' : 'Live Advisors'}</span>
+                </a>
 
                 <a
-                  href="https://wa.me/971501234567?text=سلام،%20برای%20مشاوره%20مهاجرت%20با%20راشا%20مهاجرت%20پیام%20می‌دهم."
+                  href="https://wa.me/989120000000?text=سلام،%20برای%20مشاوره%20مهاجرت%20با%20راشا%20مهاجرت%20پیام%20می‌دهم."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#080909] text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-lg shadow-emerald-950/50"
+                  className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/25 hover:border-emerald-400/60 transition-all group flex flex-col gap-1"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{language === 'fa' ? 'پیام در واتس‌اپ' : 'Start WhatsApp Chat'}</span>
+                  <div className="flex items-center justify-between text-[11px] text-emerald-300">
+                    <span className="font-semibold">{language === 'fa' ? 'واتس‌اپ رسمی' : 'WhatsApp'}</span>
+                    <MessageCircle className="w-3 h-3 text-emerald-400" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-mono text-[#F4F0E8] font-bold dir-ltr">
+                    +98 912 000 0000
+                  </span>
+                  <span className="text-[10px] text-emerald-400/80">{language === 'fa' ? 'ارسال صوت و مدارک' : '24/7 Chat'}</span>
                 </a>
               </div>
 
-              {/* Fast 15-Minute Callback Form */}
-              <form onSubmit={handleSubmit} className="p-6 rounded-xl bg-[#080909] border border-white/[0.08] space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#C9A96A] uppercase tracking-wider">
-                  <Clock className="w-4 h-4" />
-                  <span>{language === 'fa' ? 'درخواست تماس سریع در کمتر از ۱۵ دقیقه' : 'Request Callback within 15 Minutes'}</span>
+              {/* Fast Callback Form */}
+              <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 rounded-xl bg-[#080909] border border-white/[0.08] space-y-3">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#C9A96A] uppercase tracking-wider">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{language === 'fa' ? 'درخواست تماس مشاور در ۱۵ دقیقه' : 'Request Callback in 15 Mins'}</span>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] uppercase text-[#9B9B95] mb-1">
+                    <label className="block text-[10px] text-[#9B9B95] mb-1">
                       {language === 'fa' ? 'نام و نام خانوادگی' : 'Full Name'} *
                     </label>
                     <input
@@ -230,67 +186,66 @@ export const QuickCallModal: React.FC<QuickCallModalProps> = ({
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder={language === 'fa' ? 'مثال: علیرضا افشار' : 'e.g. Alireza Afshar'}
-                      className="w-full px-3.5 py-2.5 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
+                      placeholder={language === 'fa' ? 'نام شما' : 'Your name'}
+                      className="w-full px-3 py-2 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] uppercase text-[#9B9B95] mb-1">
-                      {language === 'fa' ? 'شماره تماس / واتس‌اپ' : 'Phone Number'} *
+                    <label className="block text-[10px] text-[#9B9B95] mb-1">
+                      {language === 'fa' ? 'شماره همراه / تماس' : 'Phone Number'} *
                     </label>
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder={language === 'fa' ? '۰۹۱۲... یا با پیش‌شماره کشور' : '+98 912 ...'}
-                      className="w-full px-3.5 py-2.5 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
+                      placeholder="۰۹۱۲..."
+                      className="w-full px-3 py-2 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none dir-ltr text-right"
                     />
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] uppercase text-[#9B9B95] mb-1">
-                      {language === 'fa' ? 'موضوع مشاوره' : 'Consultation Topic'}
+                    <label className="block text-[10px] text-[#9B9B95] mb-1">
+                      {language === 'fa' ? 'موضوع مشاوره' : 'Topic'}
                     </label>
                     <select
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
+                      className="w-full px-2.5 py-2 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
                     >
-                      <option value="Skilled & Tech Migration">{language === 'fa' ? 'مهاجرت کاری و نیروی متخصص' : 'Skilled & Tech Migration'}</option>
-                      <option value="Study Abroad & Post-Study PR">{language === 'fa' ? 'مهاجرت تحصیلی و اقامت پس از تحصیل' : 'Study Abroad & Post-Study PR'}</option>
-                      <option value="Investment & Golden Visas">{language === 'fa' ? 'سرمایه‌گذاری، ثبت شرکت و گلدن ویزا' : 'Investment & Golden Visas'}</option>
-                      <option value="Passive Income & Digital Nomad">{language === 'fa' ? 'اقامت تمکن مالی و دیجیتال نومد' : 'Passive Income & Digital Nomad'}</option>
-                      <option value="Family Sponsorship">{language === 'fa' ? 'اسپانسرشیپ و الحاق خانواده' : 'Family Sponsorship'}</option>
+                      <option value="Skilled & Tech Migration">{language === 'fa' ? 'مهاجرت کاری و نیروی متخصص' : 'Skilled Worker'}</option>
+                      <option value="Study Abroad & Post-Study PR">{language === 'fa' ? 'مهاجرت تحصیلی' : 'Study Abroad'}</option>
+                      <option value="Investment & Golden Visas">{language === 'fa' ? 'سرمایه‌گذاری و ثبت شرکت' : 'Investment'}</option>
+                      <option value="Passive Income & Digital Nomad">{language === 'fa' ? 'تمکن مالی و دیجیتال نومد' : 'Passive Income'}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] uppercase text-[#9B9B95] mb-1">
-                      {language === 'fa' ? 'زمان ترجیحی برای تماس' : 'Preferred Callback Time'}
+                    <label className="block text-[10px] text-[#9B9B95] mb-1">
+                      {language === 'fa' ? 'زمان تماس' : 'Preferred Time'}
                     </label>
                     <select
                       value={timePreference}
                       onChange={(e) => setTimePreference(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
+                      className="w-full px-2.5 py-2 bg-[#111313] border border-white/10 rounded-lg text-xs text-[#F4F0E8] focus:border-[#C9A96A] focus:outline-none"
                     >
-                      <option value="Immediate (< 15 mins)">{language === 'fa' ? 'فوری (حداکثر تا ۱۵ دقیقه آینده)' : 'Immediate (< 15 mins)'}</option>
-                      <option value="Today Afternoon">{language === 'fa' ? 'امروز بعد از ظهر' : 'Today Afternoon'}</option>
-                      <option value="Today Evening (18:00 - 21:00)">{language === 'fa' ? 'امروز عصر (۱۸ تا ۲۱)' : 'Today Evening (18:00 - 21:00)'}</option>
-                      <option value="Tomorrow Morning">{language === 'fa' ? 'فردا صبح' : 'Tomorrow Morning'}</option>
+                      <option value="Immediate (< 15 mins)">{language === 'fa' ? 'فوری (تا ۱۵ دقیقه)' : 'Immediate'}</option>
+                      <option value="Today Afternoon">{language === 'fa' ? 'امروز بعد از ظهر' : 'Afternoon'}</option>
+                      <option value="Today Evening (18:00 - 21:00)">{language === 'fa' ? 'امروز عصر (۱۸ تا ۲۱)' : 'Evening'}</option>
+                      <option value="Tomorrow Morning">{language === 'fa' ? 'فردا صبح' : 'Tomorrow'}</option>
                     </select>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] hover:from-[#E8CA8C] hover:to-[#DFBA73] text-[#080909] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#C9A96A]/20 transition-all cursor-pointer"
+                  className="w-full py-2.5 bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] hover:from-[#E8CA8C] hover:to-[#DFBA73] text-[#080909] font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow transition-all cursor-pointer mt-1"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>{language === 'fa' ? 'ثبت درخواست تماس و ارجاع به مشاور' : 'Submit Callback Request'}</span>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{language === 'fa' ? 'درخواست تماس مشاور' : 'Call Me Back'}</span>
                 </button>
               </form>
             </>

@@ -108,7 +108,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       {/* Top Spacer for Navbar */}
-      <div className="h-28 sm:h-32" />
+      <div className="h-20 sm:h-24" />
 
       {/* Main Hero Content: Split Grid with Headline on one side & Interactive 3D Globe on the other */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-12 w-full my-auto py-6 sm:py-10">

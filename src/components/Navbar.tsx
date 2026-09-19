@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Sun,
   Moon,
+  Calculator,
 } from 'lucide-react';
 import { Language, SiteConfig } from '../types';
 import { TRANSLATIONS } from '../data/translations';
@@ -64,7 +65,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: language === 'fa' ? 'حوزه‌های خدمات' : t.navServices, id: 'services', isModal: 'services' },
     { label: language === 'fa' ? 'پرونده‌های موفق' : 'Case Records', id: 'cases', isModal: 'cases' },
     { label: t.navProcess, id: 'process' },
-    { label: language === 'fa' ? 'دفاتر جهانی' : 'Global Hubs', id: 'global-presence' },
     { label: t.navContact, id: 'contact' },
   ];
 
@@ -96,55 +96,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     { code: 'es', label: 'Español', flag: 'ES' },
   ];
 
-  const phoneIran = siteConfig?.phoneIran || '021-8899 0011';
-  const whatsappNum = siteConfig?.whatsappNumber || '+971501234567';
-
   return (
     <>
-      {/* Top Thin Priority Hotline Ribbon */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-[#0c0e0e]/95 border-b border-white/[0.06] text-[10px] text-[#9B9B95] px-4 py-1.5 hidden md:flex items-center justify-between font-mono backdrop-blur-md">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[#DFBA73]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              <span>{language === 'fa' ? 'پاسخگویی سریع ۲۴ ساعته مشاوران بین‌المللی' : '24/7 International Desk'}</span>
-            </span>
-            <span className="text-white/20">|</span>
-            <a href="tel:+982188990011" className="hover:text-[#F4F0E8] transition-colors dir-ltr">
-              {language === 'fa' ? `تلفن مشاوره: ${phoneIran}` : `Phone: ${phoneIran}`}
-            </a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a
-              href={`https://wa.me/${whatsappNum.replace(/[^0-9]/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
-            >
-              <MessageCircle className="w-3 h-3" />
-              <span>{language === 'fa' ? 'پشتیبانی واتس‌اپ' : 'WhatsApp Hotline'}</span>
-            </a>
-            <span className="text-white/20">|</span>
-            {/* Discrete Admin Dashboard link */}
-            <button
-              id="top-admin-portal-link"
-              onClick={onOpenAdmin}
-              className="text-[#9B9B95] hover:text-[#C9A96A] flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Shield className="w-3 h-3 text-[#C9A96A]" />
-              <span>{language === 'fa' ? 'ورود مدیریت' : 'Admin'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
+      {/* Sleek, Clean, Uncluttered Luxury Navbar */}
       <header
         id="main-navbar"
-        className={`fixed left-0 right-0 z-40 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? 'top-0 md:top-0 bg-[#080909]/92 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-2xl'
-            : 'top-0 md:top-7 bg-transparent py-5'
+            ? 'bg-[#080909]/92 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-2xl'
+            : 'bg-gradient-to-b from-[#080909]/80 to-transparent py-4 sm:py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-12 flex items-center justify-between">
@@ -154,57 +114,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleNavClick('hero')}
             className="flex items-center gap-2 text-left group focus:outline-none cursor-pointer shrink-0"
           >
-            <div className="text-base sm:text-xl tracking-[0.16em] sm:tracking-[0.25em] font-light text-[#F4F0E8] group-hover:text-[#C9A96A] transition-colors truncate max-w-[170px] min-[420px]:max-w-none">
+            <div className="text-base sm:text-xl tracking-[0.18em] sm:tracking-[0.25em] font-light text-[#F4F0E8] group-hover:text-[#C9A96A] transition-colors truncate">
               RASHA <span className="opacity-50">MOHAJERAT</span>
             </div>
           </button>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-[11px] uppercase tracking-[0.16em] font-medium text-[#9B9B95]">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                id={`nav-link-${item.id}`}
-                onClick={() => handleNavClick(item.id)}
-                className="hover:text-[#C9A96A] transition-colors relative py-1 cursor-pointer"
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Right Action Controls */}
-          <div className="hidden lg:flex items-center gap-3">
-            {/* Quick Call Button */}
-            <button
-              id="navbar-quick-call-btn"
-              onClick={onOpenQuickCall}
-              className="px-3.5 py-1.5 border border-emerald-500/40 hover:border-emerald-400 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-300 text-[10px] tracking-[0.15em] uppercase font-semibold transition-all flex items-center gap-1.5 rounded-lg cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-            >
-              <PhoneCall className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>{language === 'fa' ? 'تماس سریع' : 'Quick Call'}</span>
-            </button>
-
-            {/* Assessment Form Button */}
-            <button
-              id="navbar-assessment-btn"
-              onClick={onOpenAssessment}
-              className="px-3.5 py-1.5 border border-[#C9A96A]/40 hover:border-[#C9A96A] bg-[#C9A96A]/10 text-[#DFBA73] text-[10px] tracking-[0.14em] uppercase font-semibold transition-all flex items-center gap-1.5 rounded-lg cursor-pointer"
-            >
-              <ClipboardCheck className="w-3.5 h-3.5 text-[#C9A96A]" />
-              <span>{language === 'fa' ? 'فرم ارزیابی' : 'Assessment'}</span>
-            </button>
-
-            {/* AI Advisor Button */}
-            <button
-              id="navbar-ai-btn"
-              onClick={onOpenAi}
-              className="px-3.5 py-1.5 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] text-[#F4F0E8] text-[10px] tracking-[0.14em] uppercase transition-all flex items-center gap-1.5 rounded-lg cursor-pointer"
-            >
-              <Sparkles className="w-3 h-3 text-[#C9A96A]" />
-              <span>{t.askAiCTA}</span>
-            </button>
-
+          {/* Clean, Minimal Right Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Theme Toggle Button (Light / Dark) */}
             {onToggleTheme && (
               <button
@@ -213,14 +129,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={
                   theme === 'light'
                     ? (language === 'fa' ? 'تغییر به تم تیره' : 'Switch to Dark Mode')
-                    : (language === 'fa' ? 'تغییر به تم روشن (سفید)' : 'Switch to Light Mode')
+                    : (language === 'fa' ? 'تغییر به تم روشن' : 'Switch to Light Mode')
                 }
                 className="p-2 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] text-[#DFBA73] hover:text-[#C9A96A] rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                aria-label="Toggle Theme"
               >
                 {theme === 'light' ? (
-                  <Moon className="w-3.5 h-3.5 text-amber-500" />
+                  <Moon className="w-4 h-4 text-amber-500" />
                 ) : (
-                  <Sun className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                  <Sun className="w-4 h-4 text-amber-400 animate-pulse" />
                 )}
               </button>
             )}
@@ -231,6 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="lang-selector-btn"
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-mono uppercase text-[#9B9B95] hover:text-[#F4F0E8] border border-white/10 hover:border-[#C9A96A]/40 rounded-lg transition-colors cursor-pointer"
+                aria-label="Select Language"
               >
                 <Globe className="w-3.5 h-3.5 text-[#C9A96A]" />
                 <span>{languages.find((l) => l.code === language)?.flag}</span>
@@ -268,104 +186,60 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenAdmin}
               title={language === 'fa' ? 'پنل مدیریت سایت' : 'Admin Suite'}
               className="p-2 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] text-[#9B9B95] hover:text-[#C9A96A] rounded-lg transition-colors cursor-pointer"
+              aria-label="Admin Dashboard"
             >
               <Shield className="w-3.5 h-3.5" />
             </button>
-          </div>
 
-          {/* Mobile Actions & Menu Toggle */}
-          <div className="flex lg:hidden items-center gap-2">
-            {/* Quick Call Button on Mobile Header */}
+            {/* Luxury Menu Toggle Button */}
             <button
-              id="mobile-header-quick-call"
-              onClick={onOpenQuickCall}
-              className="p-2 text-emerald-400 bg-emerald-950/50 border border-emerald-500/40 rounded-xl min-w-[38px] min-h-[38px] flex items-center justify-center cursor-pointer shadow-sm"
-              aria-label="Quick Call"
+              id="main-menu-toggle"
+              onClick={() => setMobileMenuOpen(true)}
+              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] hover:bg-white/[0.06] text-[#F4F0E8] hover:text-[#C9A96A] rounded-lg transition-all cursor-pointer font-sans-luxury text-xs tracking-wider"
+              aria-label="Open Navigation Menu"
             >
-              <PhoneCall className="w-4 h-4 animate-pulse" />
-            </button>
-
-            {/* AI Advisor Shortcut on Mobile Header (Visible on >=380px screens) */}
-            <button
-              id="mobile-header-ai-btn"
-              onClick={onOpenAi}
-              className="hidden min-[380px]:flex p-2 text-[#DFBA73] bg-[#111313] border border-[#C9A96A]/40 rounded-xl min-w-[38px] min-h-[38px] items-center justify-center cursor-pointer"
-              aria-label="Ask Rasha AI"
-            >
-              <Sparkles className="w-4 h-4 text-[#C9A96A]" />
-            </button>
-
-            {/* Mobile Menu Toggle Button */}
-            <button
-              id="mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-[#F4F0E8] hover:text-[#C9A96A] bg-white/[0.04] border border-white/10 rounded-xl min-w-[42px] min-h-[42px] flex items-center justify-center focus:outline-none cursor-pointer"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#C9A96A]" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-4 h-4 text-[#C9A96A]" />
+              <span className="text-[11px] font-medium hidden min-[400px]:inline">
+                {language === 'fa' ? 'منو' : 'Menu'}
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer Menu */}
+      {/* Luxury Slide-Over Navigation Drawer */}
       {mobileMenuOpen && (
         <div
-          id="mobile-drawer"
-          className="fixed inset-0 z-50 bg-[#080909]/98 backdrop-blur-2xl lg:hidden flex flex-col justify-between p-6 pt-20 animate-in fade-in duration-300 overflow-y-auto"
+          id="mobile-drawer-overlay"
+          className="fixed inset-0 z-50 bg-[#080909]/80 backdrop-blur-md flex justify-end rtl:justify-start animate-in fade-in duration-200"
+          onClick={() => setMobileMenuOpen(false)}
         >
-          {/* Close Button */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-5 right-5 rtl:right-auto rtl:left-5 p-2.5 rounded-full bg-white/[0.05] border border-white/10 text-[#9B9B95] hover:text-[#F4F0E8] cursor-pointer"
-            aria-label="Close navigation"
+          <div
+            id="mobile-drawer"
+            className="relative w-full max-w-sm sm:max-w-md h-full bg-[#101212] border-l rtl:border-l-0 rtl:border-r border-white/10 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto shadow-2xl animate-in slide-in-from-right rtl:slide-in-from-left duration-300"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+            {/* Header of Drawer */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
               <div className="text-xs uppercase tracking-[0.25em] text-[#C9A96A] font-mono">
-                {language === 'fa' ? 'منوی دسترسی سریع راشا' : 'RASHA Quick Menu'}
+                {language === 'fa' ? 'فهرست بخش‌های راشا' : 'Navigation Menu'}
               </div>
-              {onToggleTheme && (
-                <button
-                  onClick={onToggleTheme}
-                  className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg border border-white/10 bg-white/[0.04] text-[#D1D1C7]"
-                >
-                  {theme === 'light' ? <Moon className="w-3.5 h-3.5 text-amber-400" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
-                  <span>{theme === 'light' ? 'تم تاریک' : 'تم روشن'}</span>
-                </button>
-              )}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-full bg-white/[0.05] border border-white/10 text-[#9B9B95] hover:text-[#F4F0E8] cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Highlighted Mobile Card for Smart Quiz & Calculator Hub */}
-            <button
-              onClick={() => handleNavClick('assessment-hub')}
-              className="w-full text-right rtl:text-right ltr:text-left p-4 rounded-2xl bg-gradient-to-r from-[#DFBA73]/20 via-[#181a1b] to-[#121415] border border-[#DFBA73]/50 shadow-lg cursor-pointer"
-            >
-              <div className="flex items-center gap-3 mb-1">
-                <span className="w-8 h-8 rounded-lg bg-[#DFBA73]/20 text-[#DFBA73] flex items-center justify-center">
-                  <Calculator className="w-4 h-4" />
-                </span>
-                <span className="text-sm font-bold text-[#F4F0E8]">
-                  {language === 'fa' ? 'مسیر مناسب مهاجرتت رو پیدا کن ✈️' : 'Immigration Pathway & Points'}
-                </span>
-              </div>
-              <p className="text-[11px] text-[#A8A8A0] font-light">
-                {language === 'fa'
-                  ? 'تست رایگان چندمرحله‌ای + محاسبه‌گر دقیق امتیاز اقامت'
-                  : 'Free multistep assessment quiz & points calculator'}
-              </p>
-            </button>
-
-            {/* Standard Navigation Links */}
-            <div className="flex flex-col gap-3">
+            {/* Navigation Links */}
+            <div className="flex flex-col gap-2 py-4">
               {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className="text-left rtl:text-right text-lg sm:text-xl font-serif-display text-[#F4F0E8] hover:text-[#C9A96A] transition-colors py-1 flex items-center justify-between group cursor-pointer"
+                  className="text-left rtl:text-right text-base sm:text-lg font-serif-display text-[#F4F0E8] hover:text-[#C9A96A] transition-colors py-2.5 px-3 rounded-xl hover:bg-white/[0.03] flex items-center justify-between group cursor-pointer"
                 >
                   <span>{item.label}</span>
                   <span className="text-xs text-white/20 group-hover:text-[#C9A96A] group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all">
@@ -374,7 +248,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               ))}
             </div>
-          </div>
 
           <div className="flex flex-col gap-3 pt-6 border-t border-white/10 mt-6">
             {/* Mobile Action Buttons */}
@@ -448,6 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
         </div>
+      </div>
       )}
     </>
   );

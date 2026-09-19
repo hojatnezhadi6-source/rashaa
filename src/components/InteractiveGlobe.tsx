@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 import {
   Sparkles,
@@ -43,6 +44,7 @@ interface ProjectedPin {
   y: number;
   visible: boolean;
   scale: number;
+  opacity?: number;
 }
 
 interface ProjectedCityPin {
@@ -51,6 +53,7 @@ interface ProjectedCityPin {
   y: number;
   visible: boolean;
   scale: number;
+  opacity?: number;
 }
 
 export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
@@ -75,6 +78,26 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
   const [currentZoomDist, setCurrentZoomDist] = useState<number>(3.8);
   const [showCitiesToggle, setShowCitiesToggle] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Lock background scrolling and support ESC key when modal is open
+  useEffect(() => {
+    if (modalOpen || cityModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setModalOpen(false);
+        setCityModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [modalOpen, cityModalOpen]);
 
   // Three.js instances ref
   const threeRef = useRef<{
@@ -419,31 +442,66 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
 
       // Vector pointing from globe center to camera
       const cameraToGlobe = state.camera.position.clone().sub(state.globeGroup.position).normalize();
+      const camDist = state.camera.position.distanceTo(state.globeGroup.position);
+
+      // Geometric horizon cutoff for globe radius (1.05): cos(theta) = R / D
+      // Strict margins: labels and pins disappear cleanly when rotated to the back
+      // and labels never poke outside the globe circle frame.
+      const earthRadius = 1.05;
+      const geometricHorizon = earthRadius / camDist;
+      const labelHorizonCutoff = geometricHorizon + 0.16; // Front-facing visibility threshold
+      const pinHorizonCutoff = geometricHorizon + 0.02;   // 3D beacon cutoff
+
+      const cx = currentWidth / 2;
+      const cy = currentHeight / 2;
+      // Maximum allowed badge distance from center (prevent labels from leaving the circular frame)
+      const maxScreenRadius = Math.min(currentWidth, currentHeight) * 0.41;
 
       // 1. Project Country Badges
       const projectedCountries: ProjectedPin[] = [];
       state.countryPinObjects.forEach((pin) => {
         const worldPos = pin.position.clone().applyMatrix4(state.globeGroup!.matrixWorld);
         const surfaceDir = worldPos.clone().sub(state.globeGroup!.position).normalize();
+        const dotProduct = surfaceDir.dot(cameraToGlobe);
 
-        // Accurate horizon culling: only visible when facing the camera
-        const isFacingCamera = surfaceDir.dot(cameraToGlobe) > 0.12;
+        // Hide 3D pin beacon immediately when it rotates to the back
+        pin.beaconGroup.visible = dotProduct > pinHorizonCutoff;
 
-        if (isFacingCamera) {
+        // Label visibility: only visible when comfortably facing camera on the front
+        if (dotProduct > labelHorizonCutoff) {
           const screenPos = worldPos.clone().project(state.camera!);
-          const x = (screenPos.x * 0.5 + 0.5) * currentWidth;
-          const y = (-screenPos.y * 0.5 + 0.5) * currentHeight;
 
-          // Scale badges dynamically based on distance
-          const scaleFactor = Math.max(0.65, Math.min(1.25, 3.8 / zoomDist));
+          // Check if in front of camera clip plane
+          if (screenPos.z < 1.0) {
+            const x = (screenPos.x * 0.5 + 0.5) * currentWidth;
+            const y = (-screenPos.y * 0.5 + 0.5) * currentHeight;
 
-          projectedCountries.push({
-            country: pin.country,
-            x,
-            y,
-            visible: true,
-            scale: scaleFactor,
-          });
+            const distFromCenter = Math.hypot(x - cx, y - cy);
+
+            // Ensure label stays strictly inside the circular globe and container bounds
+            if (
+              distFromCenter <= maxScreenRadius &&
+              x >= 24 &&
+              x <= currentWidth - 24 &&
+              y >= 24 &&
+              y <= currentHeight - 24
+            ) {
+              const scaleFactor = Math.max(0.65, Math.min(1.2, 3.8 / zoomDist));
+              // Smooth fade out as it approaches the horizon edge
+              const opacity = Math.min(1, Math.max(0, (dotProduct - labelHorizonCutoff) / 0.14));
+
+              if (opacity > 0.08) {
+                projectedCountries.push({
+                  country: pin.country,
+                  x,
+                  y,
+                  visible: true,
+                  scale: scaleFactor,
+                  opacity,
+                });
+              }
+            }
+          }
         }
       });
       setProjectedPins(projectedCountries);
@@ -454,23 +512,42 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         state.cityPinObjects.forEach((pin) => {
           const worldPos = pin.position.clone().applyMatrix4(state.globeGroup!.matrixWorld);
           const surfaceDir = worldPos.clone().sub(state.globeGroup!.position).normalize();
-          const isFacingCamera = surfaceDir.dot(cameraToGlobe) > 0.16;
+          const dotProduct = surfaceDir.dot(cameraToGlobe);
 
-          if (isFacingCamera) {
+          // Hide 3D city pin beacon when rotated to the back
+          pin.beaconGroup.visible = dotProduct > pinHorizonCutoff;
+
+          if (dotProduct > labelHorizonCutoff + 0.04) {
             const screenPos = worldPos.clone().project(state.camera!);
-            const x = (screenPos.x * 0.5 + 0.5) * currentWidth;
-            const y = (-screenPos.y * 0.5 + 0.5) * currentHeight;
 
-            // City badge scale
-            const cityScale = Math.max(0.7, Math.min(1.15, 3.2 / zoomDist));
+            if (screenPos.z < 1.0) {
+              const x = (screenPos.x * 0.5 + 0.5) * currentWidth;
+              const y = (-screenPos.y * 0.5 + 0.5) * currentHeight;
 
-            projectedCities.push({
-              city: pin.city,
-              x,
-              y,
-              visible: true,
-              scale: cityScale,
-            });
+              const distFromCenter = Math.hypot(x - cx, y - cy);
+
+              if (
+                distFromCenter <= maxScreenRadius &&
+                x >= 24 &&
+                x <= currentWidth - 24 &&
+                y >= 24 &&
+                y <= currentHeight - 24
+              ) {
+                const cityScale = Math.max(0.7, Math.min(1.15, 3.2 / zoomDist));
+                const opacity = Math.min(1, Math.max(0, (dotProduct - (labelHorizonCutoff + 0.04)) / 0.12));
+
+                if (opacity > 0.08) {
+                  projectedCities.push({
+                    city: pin.city,
+                    x,
+                    y,
+                    visible: true,
+                    scale: cityScale,
+                    opacity,
+                  });
+                }
+              }
+            }
           }
         });
       }
@@ -851,7 +928,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         <div ref={canvasContainerRef} className="w-full h-full rounded-full overflow-hidden" />
 
         {/* 2D Projected Floating HTML Badges & Interactive Pins */}
-        <div dir="ltr" className="absolute inset-0 pointer-events-none overflow-visible" style={{ left: 0, top: 0 }}>
+        <div dir="ltr" className="absolute inset-0 pointer-events-none rounded-full overflow-hidden" style={{ left: 0, top: 0 }}>
           {/* Country Level Pins */}
           {projectedPins.map((pin) => {
             const isSelected = selectedCountry?.id === pin.country.id;
@@ -865,9 +942,10 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                   top: 0,
                   transform: `translate3d(${pin.x}px, ${pin.y}px, 0) translate(-50%, -100%) scale(${pin.scale})`,
                   transformOrigin: 'bottom center',
+                  opacity: pin.opacity ?? 1,
                   display: pin.visible ? 'block' : 'none',
                 }}
-                className="absolute z-20 pointer-events-auto transition-transform duration-200"
+                className="absolute z-20 pointer-events-auto transition-opacity duration-150"
               >
                 {/* Floating Clickable Badge */}
                 <button
@@ -911,9 +989,10 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                     top: 0,
                     transform: `translate3d(${pin.x}px, ${pin.y}px, 0) translate(-50%, -100%) scale(${pin.scale})`,
                     transformOrigin: 'bottom center',
+                    opacity: pin.opacity ?? 1,
                     display: pin.visible ? 'block' : 'none',
                   }}
-                  className="absolute z-30 pointer-events-auto transition-transform duration-150"
+                  className="absolute z-30 pointer-events-auto transition-opacity duration-150"
                 >
                   <button
                     onClick={() => {
@@ -1087,41 +1166,50 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       )}
 
       {/* Comprehensive Country Immigration & Exam Dossier Modal */}
-      {modalOpen && selectedCountry && (
+      {modalOpen && selectedCountry && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalOpen(false);
+          }}
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-[#080909]/96 backdrop-blur-2xl animate-in fade-in duration-200 overflow-y-auto"
         >
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0c0e0e] border border-[#C9A96A]/40 rounded-2xl shadow-2xl p-6 sm:p-8 text-[#F4F0E8]">
-            {/* Close Button */}
-            <button
-              onClick={() => setModalOpen(false)}
-              className="absolute top-5 right-5 rtl:right-auto rtl:left-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Modal Header */}
-            <div className="flex items-center gap-4 mb-6">
-              <span className="text-4xl sm:text-5xl p-2 bg-black/40 rounded-2xl border border-white/10">
-                {selectedCountry.flag}
-              </span>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl sm:text-3xl font-bold font-farsi text-[#F4F0E8]">
-                    {language === 'fa' ? selectedCountry.nameFa : selectedCountry.nameEn}
-                  </h2>
-                  <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-[#DFBA73]/20 text-[#DFBA73] border border-[#DFBA73]/40">
-                    {selectedCountry.passportRank}
-                  </span>
+          <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-[#0e1011] border border-[#C9A96A]/50 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] p-5 sm:p-8 text-[#F4F0E8] my-auto">
+            {/* Modal Header with Dedicated, Clear Close Button */}
+            <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-white/10">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <span className="text-4xl sm:text-5xl p-2 bg-black/60 rounded-2xl border border-white/10 shrink-0">
+                  {selectedCountry.flag}
+                </span>
+                <div>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <h2 className="text-xl sm:text-2xl font-bold font-farsi text-[#F4F0E8]">
+                      {language === 'fa' ? selectedCountry.nameFa : selectedCountry.nameEn}
+                    </h2>
+                    <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-[#DFBA73]/20 text-[#DFBA73] border border-[#DFBA73]/40">
+                      {selectedCountry.passportRank}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#9B9B95] font-mono mt-1">
+                    {language === 'fa'
+                      ? `پایتخت: ${selectedCountry.capitalFa} • سفر بدون ویزا: به ${selectedCountry.visaFreeCountries} کشور جهان`
+                      : `Capital: ${selectedCountry.capital} • Visa-free access to ${selectedCountry.visaFreeCountries} countries`}
+                  </p>
                 </div>
-                <p className="text-xs text-[#9B9B95] font-mono mt-1">
-                  {language === 'fa'
-                    ? `پایتخت: ${selectedCountry.capitalFa} • سفر بدون ویزا: به ${selectedCountry.visaFreeCountries} کشور جهان`
-                    : `Capital: ${selectedCountry.capital} • Visa-free access to ${selectedCountry.visaFreeCountries} countries`}
-                </p>
               </div>
+
+              {/* High-visibility Close Button */}
+              <button
+                id="close-country-modal-btn"
+                onClick={() => setModalOpen(false)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-red-500/20 text-[#F4F0E8] hover:text-red-300 border border-white/20 hover:border-red-500/40 transition-all cursor-pointer shrink-0 shadow-sm"
+                aria-label={language === 'fa' ? 'بستن پنجره' : 'Close modal'}
+                title={language === 'fa' ? 'بستن (Esc)' : 'Close (Esc)'}
+              >
+                <span className="text-xs font-medium">{language === 'fa' ? 'بستن' : 'Close'}</span>
+                <X className="w-4 h-4 text-[#DFBA73]" />
+              </button>
             </div>
 
             {/* Golden Privilege Banner */}
@@ -1216,41 +1304,50 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* City Detail Modal */}
-      {cityModalOpen && selectedCity && (
+      {cityModalOpen && selectedCity && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setCityModalOpen(false);
+          }}
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-[#080909]/96 backdrop-blur-2xl animate-in fade-in duration-200 overflow-y-auto"
         >
-          <div className="relative w-full max-w-md bg-[#0c0e0e] border border-emerald-500/40 rounded-2xl shadow-2xl p-6 text-[#F4F0E8]">
-            <button
-              onClick={() => setCityModalOpen(false)}
-              className="absolute top-4 right-4 rtl:right-auto rtl:left-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-emerald-400">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold font-farsi text-emerald-300">
-                  {language === 'fa' ? selectedCity.nameFa : selectedCity.nameEn}
-                </h3>
-                <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
-                  <span>{selectedCity.population} جمعیت</span>
-                  {selectedCity.isCapital && (
-                    <span className="px-2 py-0.5 rounded bg-[#DFBA73]/20 text-[#DFBA73] text-[10px]">
-                      {language === 'fa' ? 'پایتخت رسمی' : 'Capital'}
-                    </span>
-                  )}
+          <div className="relative w-full max-w-md bg-[#0e1011] border border-emerald-500/40 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] p-6 text-[#F4F0E8] my-auto">
+            <div className="flex items-start justify-between gap-3 pb-3 mb-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-400">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold font-farsi text-emerald-300">
+                    {language === 'fa' ? selectedCity.nameFa : selectedCity.nameEn}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
+                    <span>{selectedCity.population} جمعیت</span>
+                    {selectedCity.isCapital && (
+                      <span className="px-2 py-0.5 rounded bg-[#DFBA73]/20 text-[#DFBA73] text-[10px]">
+                        {language === 'fa' ? 'پایتخت رسمی' : 'Capital'}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              <button
+                id="close-city-modal-btn"
+                onClick={() => setCityModalOpen(false)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/20 text-[#F4F0E8] hover:text-red-300 border border-white/20 hover:border-red-500/40 transition-all cursor-pointer shrink-0"
+                aria-label={language === 'fa' ? 'بستن' : 'Close'}
+              >
+                <span className="text-xs font-medium">{language === 'fa' ? 'بستن' : 'Close'}</span>
+                <X className="w-4 h-4 text-emerald-400" />
+              </button>
             </div>
 
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 mb-5">
@@ -1271,7 +1368,8 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

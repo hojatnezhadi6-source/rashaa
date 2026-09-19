@@ -14,7 +14,6 @@ import { DestinationsSection } from './components/DestinationsSection';
 import { BlueprintSection } from './components/BlueprintSection';
 import { ExecutivePortalsBar } from './components/ExecutivePortalsBar';
 import { InteractiveAssessmentHub } from './components/InteractiveAssessmentHub';
-import { GlobalPresenceSection } from './components/GlobalPresenceSection';
 import { ConsultationSection } from './components/ConsultationSection';
 import { Footer } from './components/Footer';
 import { ServicesModal } from './components/ServicesModal';
@@ -67,6 +66,32 @@ export default function App() {
       document.documentElement.dir = 'ltr';
     }
   }, [language]);
+
+  // Synchronize dynamic typography themes across the entire site
+  useEffect(() => {
+    const persianFontClasses = [
+      'font-theme-peyda',
+      'font-theme-estedad',
+      'font-theme-shabnam',
+      'font-theme-vazir',
+      'font-theme-sahel',
+      'font-theme-amiri',
+    ];
+    const englishFontClasses = [
+      'font-en-sora',
+      'font-en-playfair',
+      'font-en-manrope',
+      'font-en-cormorant',
+    ];
+
+    document.documentElement.classList.remove(...persianFontClasses, ...englishFontClasses);
+
+    const activeFaFont = siteConfig.persianFont || siteConfig.persianFontTheme || 'peyda';
+    document.documentElement.classList.add(`font-theme-${activeFaFont}`);
+
+    const activeEnFont = siteConfig.englishFont || siteConfig.englishFontTheme || 'sora';
+    document.documentElement.classList.add(`font-en-${activeEnFont}`);
+  }, [siteConfig.persianFont, siteConfig.persianFontTheme, siteConfig.englishFont, siteConfig.englishFontTheme]);
 
   const handleNavigate = (sectionId: string) => {
     const el = document.getElementById(sectionId);
@@ -159,12 +184,6 @@ export default function App() {
           processSteps={siteConfig.processSteps}
           onBookConsultation={() => handleNavigate('contact')}
           onExploreServices={() => setServicesModalOpen(true)}
-        />
-
-        {/* 5. "FROM HERE TO ANYWHERE." Global Metropolis Map & Hubs */}
-        <GlobalPresenceSection
-          language={language}
-          onBookConsultation={() => handleNavigate('contact')}
         />
 
         {/* 6. "YOUR NEXT CHAPTER STARTS HERE." Private Advisory Consultation Desk */}

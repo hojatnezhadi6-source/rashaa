@@ -46,24 +46,50 @@
 }
 
 .font-serif-display {
-  font-family: 'Georgia', 'Cormorant Garamond', 'Playfair Display', serif;
+  font-family: 'Playfair Display', 'Cormorant Garamond', 'Georgia', serif;
 }
 
 .font-editorial {
-  font-family: 'Instrument Serif', 'Georgia', 'Cormorant Garamond', serif;
+  font-family: 'Playfair Display', 'Instrument Serif', 'Georgia', serif;
 }
 
 .font-sans-luxury {
-  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+  font-family: 'Sora', 'Manrope', 'Inter', system-ui, sans-serif;
 }
 
+/* Dedicated English Typography Styles */
+.font-sora {
+  font-family: 'Sora', 'Manrope', system-ui, -apple-system, sans-serif !important;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', 'Georgia', serif !important;
+}
+
+.font-manrope {
+  font-family: 'Manrope', system-ui, sans-serif !important;
+}
+
+/* Persian Font Utilities */
 .font-farsi {
-  font-family: 'Shabnam', 'Vazirmatn', 'Sahel', system-ui, sans-serif;
+  font-family: 'Peyda', 'Estedad', 'Shabnam', 'Vazirmatn', 'Sahel', system-ui, sans-serif;
 }
 
 .font-farsi-title {
-  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif;
+  font-family: 'Peyda', 'Estedad', 'Shabnam', 'Vazirmatn', system-ui, sans-serif;
   letter-spacing: normal !important;
+}
+
+.font-farsi-peyda {
+  font-family: 'Peyda', 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
+}
+
+.font-farsi-estedad {
+  font-family: 'Estedad', 'Vazirmatn', 'Shabnam', system-ui, sans-serif !important;
+}
+
+.font-farsi-shabnam {
+  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
 }
 
 .font-farsi-sahel {
@@ -76,6 +102,65 @@
 
 .font-farsi-amiri {
   font-family: 'Amiri', 'Georgia', serif !important;
+}
+
+/* Dynamic Site-wide Font Theme Overrides */
+html.font-theme-peyda [dir="rtl"],
+html.font-theme-peyda [dir="rtl"] body {
+  font-family: 'Peyda', 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
+}
+html.font-theme-peyda [dir="rtl"] h1,
+html.font-theme-peyda [dir="rtl"] h2,
+html.font-theme-peyda [dir="rtl"] h3,
+html.font-theme-peyda [dir="rtl"] .font-serif-display,
+html.font-theme-peyda [dir="rtl"] .font-farsi-title {
+  font-family: 'Peyda', 'Shabnam', system-ui, sans-serif !important;
+}
+
+html.font-theme-estedad [dir="rtl"],
+html.font-theme-estedad [dir="rtl"] body {
+  font-family: 'Estedad', 'Vazirmatn', system-ui, sans-serif !important;
+}
+html.font-theme-estedad [dir="rtl"] h1,
+html.font-theme-estedad [dir="rtl"] h2,
+html.font-theme-estedad [dir="rtl"] h3,
+html.font-theme-estedad [dir="rtl"] .font-serif-display,
+html.font-theme-estedad [dir="rtl"] .font-farsi-title {
+  font-family: 'Estedad', 'Vazirmatn', system-ui, sans-serif !important;
+}
+
+html.font-theme-shabnam [dir="rtl"],
+html.font-theme-shabnam [dir="rtl"] body {
+  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
+}
+
+html.font-theme-vazir [dir="rtl"],
+html.font-theme-vazir [dir="rtl"] body {
+  font-family: 'Vazirmatn', system-ui, sans-serif !important;
+}
+
+html.font-theme-sahel [dir="rtl"],
+html.font-theme-sahel [dir="rtl"] body {
+  font-family: 'Sahel', 'Shabnam', system-ui, sans-serif !important;
+}
+
+html.font-theme-amiri [dir="rtl"],
+html.font-theme-amiri [dir="rtl"] body {
+  font-family: 'Amiri', 'Georgia', serif !important;
+}
+
+html.font-en-sora [dir="ltr"] h1,
+html.font-en-sora [dir="ltr"] h2,
+html.font-en-sora [dir="ltr"] h3,
+html.font-en-sora [dir="ltr"] .font-serif-display {
+  font-family: 'Sora', sans-serif !important;
+}
+
+html.font-en-playfair [dir="ltr"] h1,
+html.font-en-playfair [dir="ltr"] h2,
+html.font-en-playfair [dir="ltr"] h3,
+html.font-en-playfair [dir="ltr"] .font-serif-display {
+  font-family: 'Playfair Display', Georgia, serif !important;
 }
 
 /* Custom luxury scrollbar */

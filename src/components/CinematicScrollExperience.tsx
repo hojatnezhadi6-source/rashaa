@@ -14,9 +14,8 @@ const SECTIONS = [
   { id: 'why-rasha', labelEn: 'Principles', labelFa: 'اصول راشا', num: '04' },
   { id: 'process', labelEn: 'Roadmap', labelFa: 'نقشه راه', num: '05' },
   { id: 'case-studies', labelEn: 'Success Cases', labelFa: 'پرونده‌ها', num: '06' },
-  { id: 'global-presence', labelEn: 'Global Desks', labelFa: 'دفاتر جهان', num: '07' },
-  { id: 'journal', labelEn: 'Journal', labelFa: 'مجله راشا', num: '08' },
-  { id: 'contact', labelEn: 'Advisory Desk', labelFa: 'مشاوره', num: '09' },
+  { id: 'journal', labelEn: 'Journal', labelFa: 'مجله راشا', num: '07' },
+  { id: 'contact', labelEn: 'Advisory Desk', labelFa: 'مشاوره و تماس', num: '08' },
 ];
 
 export const CinematicScrollExperience: React.FC<CinematicScrollExperienceProps> = ({
