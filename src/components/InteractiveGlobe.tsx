@@ -5,8 +5,6 @@ import {
   Sparkles,
   Compass,
   RotateCcw,
-  ZoomIn,
-  ZoomOut,
   Play,
   Pause,
   ArrowRight,
@@ -19,13 +17,10 @@ import {
   X,
   ShieldCheck,
   GraduationCap,
-  Building2,
-  MapPin,
   Layers,
   Search,
 } from 'lucide-react';
 import { GLOBE_COUNTRIES, GlobeCountryInfo } from '../data/globeDestinations';
-import { GLOBE_CITIES, GlobeCity } from '../data/globeCities';
 import { Language } from '../types';
 import {
   createEarthDayTexture,
@@ -35,53 +30,51 @@ interface InteractiveGlobeProps {
   language: Language;
   onSelectDestinationForAssessment: (destName: string) => void;
   onBookConsultationForCountry: (destName: string) => void;
-  isLightTheme?: boolean;
 }
 
 interface ProjectedPin {
   country: GlobeCountryInfo;
   x: number;
   y: number;
+  badgeX: number;
+  badgeY: number;
   visible: boolean;
   scale: number;
   opacity?: number;
 }
 
-interface ProjectedCityPin {
-  city: GlobeCity;
-  x: number;
-  y: number;
-  visible: boolean;
-  scale: number;
-  opacity?: number;
-}
+const getGlobeBadgeName = (country: GlobeCountryInfo, lang: Language): string => {
+  if (lang === 'fa') {
+    if (country.id === 'uk') return 'بریتانیا';
+    if (country.id === 'uae') return 'امارات';
+    if (country.id === 'usa') return 'آمریکا';
+    return country.nameFa;
+  }
+  if (country.id === 'uk') return 'UK';
+  if (country.id === 'uae') return 'UAE';
+  if (country.id === 'usa') return 'USA';
+  return country.nameEn;
+};
 
 export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
   language,
   onSelectDestinationForAssessment,
   onBookConsultationForCountry,
-  isLightTheme = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
   // Active selected country modal state
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryInfo | null>(GLOBE_COUNTRIES[0]);
-  const [selectedCity, setSelectedCity] = useState<GlobeCity | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [cityModalOpen, setCityModalOpen] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryInfo | null>(null);
-  const [hoveredCity, setHoveredCity] = useState<GlobeCity | null>(null);
   const [projectedPins, setProjectedPins] = useState<ProjectedPin[]>([]);
-  const [projectedCityPins, setProjectedCityPins] = useState<ProjectedCityPin[]>([]);
-  const [currentZoomDist, setCurrentZoomDist] = useState<number>(3.8);
-  const [showCitiesToggle, setShowCitiesToggle] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Lock background scrolling and support ESC key when modal is open
   useEffect(() => {
-    if (modalOpen || cityModalOpen) {
+    if (modalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -89,7 +82,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setModalOpen(false);
-        setCityModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -97,7 +89,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [modalOpen, cityModalOpen]);
+  }, [modalOpen]);
 
   // Three.js instances ref
   const threeRef = useRef<{
@@ -108,14 +100,11 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     atmosphereMesh: THREE.Mesh | null;
     globeGroup: THREE.Group | null;
     countryPinObjects: { country: GlobeCountryInfo; position: THREE.Vector3; beaconGroup: THREE.Group }[];
-    cityPinObjects: { city: GlobeCity; position: THREE.Vector3; beaconGroup: THREE.Group }[];
     animId: number | null;
     isDragging: boolean;
     prevMousePos: { x: number; y: number };
     rotationVelocity: { x: number; y: number };
     targetRotation: { x: number; y: number } | null;
-    targetZoom: number | null;
-    zoomLevel: number;
   }>({
     renderer: null,
     scene: null,
@@ -125,14 +114,11 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     atmosphereMesh: null,
     globeGroup: null,
     countryPinObjects: [],
-    cityPinObjects: [],
     animId: null,
     isDragging: false,
     prevMousePos: { x: 0, y: 0 },
     rotationVelocity: { x: 0.0012, y: 0 },
     targetRotation: null,
-    targetZoom: null,
-    zoomLevel: 3.8,
   });
 
   // Convert lat/lng to 3D sphere coordinate
@@ -311,48 +297,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       });
     });
 
-    // 10. 3D City Beacons & Pins (Appear crisp when zooming)
-    const cityPinObjects: { city: GlobeCity; position: THREE.Vector3; beaconGroup: THREE.Group }[] = [];
-
-    GLOBE_CITIES.forEach((city) => {
-      const pos = latLngToVector3(city.lat, city.lng, earthRadius);
-      const beaconGroup = new THREE.Group();
-      beaconGroup.position.copy(pos);
-
-      const normal = pos.clone().normalize();
-      beaconGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
-
-      // City pinpoint beacon: subtle cyan/gold beacon close to surface
-      const pinHeight = city.isCapital ? 0.035 : 0.025;
-      const pinGeo = new THREE.CylinderGeometry(0.0025, 0.0025, pinHeight, 6);
-      pinGeo.translate(0, pinHeight / 2, 0);
-      const pinMat = new THREE.MeshBasicMaterial({
-        color: city.isCapital ? 0xdfba73 : 0x6ee7b7,
-      });
-      const pinMesh = new THREE.Mesh(pinGeo, pinMat);
-      beaconGroup.add(pinMesh);
-
-      // City node dot
-      const nodeGeo = new THREE.SphereGeometry(city.isCapital ? 0.011 : 0.008, 12, 12);
-      nodeGeo.translate(0, pinHeight, 0);
-      const nodeMat = new THREE.MeshBasicMaterial({
-        color: city.isCapital ? 0xfff0c2 : 0xa7f3d0,
-      });
-      const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
-      beaconGroup.add(nodeMesh);
-
-      globeGroup.add(beaconGroup);
-
-      const cityTipOffset = normal.clone().multiplyScalar(pinHeight);
-      const cityAnchorPos = pos.clone().add(cityTipOffset);
-
-      cityPinObjects.push({
-        city,
-        position: cityAnchorPos,
-        beaconGroup,
-      });
-    });
-
     // Store references
     threeRef.current = {
       ...threeRef.current,
@@ -363,7 +307,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       atmosphereMesh,
       globeGroup,
       countryPinObjects,
-      cityPinObjects,
     };
 
     // 11. Render & Animation Loop
@@ -375,20 +318,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
 
       const delta = clock.getDelta();
       const time = clock.getElapsedTime();
-
-      // Smooth zoom interpolation towards targetZoom
-      if (state.targetZoom !== null && state.camera) {
-        const diffZ = state.targetZoom - state.camera.position.z;
-        if (Math.abs(diffZ) < 0.01) {
-          state.camera.position.z = state.targetZoom;
-          state.zoomLevel = state.targetZoom;
-          state.targetZoom = null;
-        } else {
-          state.camera.position.z += diffZ * 0.12;
-          state.zoomLevel = state.camera.position.z;
-        }
-        setCurrentZoomDist(state.camera.position.z);
-      }
 
       // Handle Smooth Focusing or Inertial Spin
       if (state.targetRotation) {
@@ -425,14 +354,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         pin.beaconGroup.children[1].scale.set(scale, scale, scale);
       });
 
-      // City pins visibility based on zoom distance
-      const zoomDist = state.camera.position.z;
-      // Close zoom threshold: cities become visible and prominent below zoom 3.55
-      const isCloseZoom = zoomDist < 3.55;
-      state.cityPinObjects.forEach((cityPin) => {
-        cityPin.beaconGroup.visible = isCloseZoom;
-      });
-
       // Render 3D Scene
       state.renderer.render(state.scene, state.camera);
 
@@ -457,7 +378,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       // Maximum allowed badge distance from center (prevent labels from leaving the circular frame)
       const maxScreenRadius = Math.min(currentWidth, currentHeight) * 0.41;
 
-      // 1. Project Country Badges
+      // Project Country Badges
       const projectedCountries: ProjectedPin[] = [];
       state.countryPinObjects.forEach((pin) => {
         const worldPos = pin.position.clone().applyMatrix4(state.globeGroup!.matrixWorld);
@@ -486,7 +407,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
               y >= 24 &&
               y <= currentHeight - 24
             ) {
-              const scaleFactor = Math.max(0.65, Math.min(1.2, 3.8 / zoomDist));
+              const scaleFactor = 1;
               // Smooth fade out as it approaches the horizon edge
               const opacity = Math.min(1, Math.max(0, (dotProduct - labelHorizonCutoff) / 0.14));
 
@@ -495,6 +416,8 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                   country: pin.country,
                   x,
                   y,
+                  badgeX: x,
+                  badgeY: y - 8,
                   visible: true,
                   scale: scaleFactor,
                   opacity,
@@ -504,54 +427,67 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
           }
         }
       });
-      setProjectedPins(projectedCountries);
 
-      // 2. Project City Badges (Active when zoomed in)
-      const projectedCities: ProjectedCityPin[] = [];
-      if (isCloseZoom) {
-        state.cityPinObjects.forEach((pin) => {
-          const worldPos = pin.position.clone().applyMatrix4(state.globeGroup!.matrixWorld);
-          const surfaceDir = worldPos.clone().sub(state.globeGroup!.position).normalize();
-          const dotProduct = surfaceDir.dot(cameraToGlobe);
+      // Anti-collision / Anti-overlap solver for country badges in clustered regions (e.g. Europe)
+      if (projectedCountries.length > 1) {
+        // Minimum comfortable separation distance between badges
+        const minSepX = 74;
+        const minSepY = 28;
 
-          // Hide 3D city pin beacon when rotated to the back
-          pin.beaconGroup.visible = dotProduct > pinHorizonCutoff;
+        for (let iter = 0; iter < 10; iter++) {
+          for (let i = 0; i < projectedCountries.length; i++) {
+            for (let j = i + 1; j < projectedCountries.length; j++) {
+              const p1 = projectedCountries[i];
+              const p2 = projectedCountries[j];
 
-          if (dotProduct > labelHorizonCutoff + 0.04) {
-            const screenPos = worldPos.clone().project(state.camera!);
+              const dx = p2.badgeX - p1.badgeX;
+              const dy = p2.badgeY - p1.badgeY;
+              const absX = Math.abs(dx);
+              const absY = Math.abs(dy);
 
-            if (screenPos.z < 1.0) {
-              const x = (screenPos.x * 0.5 + 0.5) * currentWidth;
-              const y = (-screenPos.y * 0.5 + 0.5) * currentHeight;
+              const overlapX = minSepX - absX;
+              const overlapY = minSepY - absY;
 
-              const distFromCenter = Math.hypot(x - cx, y - cy);
+              if (overlapX > 0 && overlapY > 0) {
+                // Badges overlap: gently push apart
+                if (overlapY / minSepY <= overlapX / minSepX) {
+                  const signY = dy >= 0 ? 1 : -1;
+                  const shiftY = overlapY * 0.5 * signY;
+                  const signX = dx >= 0 ? 1 : -1;
+                  const shiftX = overlapX * 0.15 * (absX < 4 ? (i % 2 === 0 ? 1 : -1) : signX);
 
-              if (
-                distFromCenter <= maxScreenRadius &&
-                x >= 24 &&
-                x <= currentWidth - 24 &&
-                y >= 24 &&
-                y <= currentHeight - 24
-              ) {
-                const cityScale = Math.max(0.7, Math.min(1.15, 3.2 / zoomDist));
-                const opacity = Math.min(1, Math.max(0, (dotProduct - (labelHorizonCutoff + 0.04)) / 0.12));
+                  p1.badgeY -= shiftY;
+                  p1.badgeX -= shiftX;
+                  p2.badgeY += shiftY;
+                  p2.badgeX += shiftX;
+                } else {
+                  const signX = dx >= 0 ? 1 : -1;
+                  const shiftX = overlapX * 0.5 * signX;
+                  const signY = dy >= 0 ? 1 : -1;
+                  const shiftY = overlapY * 0.15 * (absY < 4 ? (i % 2 === 0 ? 1 : -1) : signY);
 
-                if (opacity > 0.08) {
-                  projectedCities.push({
-                    city: pin.city,
-                    x,
-                    y,
-                    visible: true,
-                    scale: cityScale,
-                    opacity,
-                  });
+                  p1.badgeX -= shiftX;
+                  p1.badgeY -= shiftY;
+                  p2.badgeX += shiftX;
+                  p2.badgeY += shiftY;
                 }
               }
             }
           }
+        }
+
+        // Softly clamp displaced badges to remain within the spherical globe boundaries
+        projectedCountries.forEach((p) => {
+          const dist = Math.hypot(p.badgeX - cx, p.badgeY - cy);
+          if (dist > maxScreenRadius) {
+            const angle = Math.atan2(p.badgeY - cy, p.badgeX - cx);
+            p.badgeX = cx + Math.cos(angle) * maxScreenRadius;
+            p.badgeY = cy + Math.sin(angle) * maxScreenRadius;
+          }
         });
       }
-      setProjectedCityPins(projectedCities);
+
+      setProjectedPins(projectedCountries);
 
       state.animId = requestAnimationFrame(animate);
     };
@@ -582,10 +518,9 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     };
   }, [latLngToVector3, isAutoRotating]);
 
-  // Smoothly rotate 3D Earth to center on a specific country and zoom in for clarity
-  const focusOnCountry = useCallback((country: GlobeCountryInfo, autoZoom = true) => {
+  // Smoothly rotate 3D Earth to center on a specific country at standard scale
+  const focusOnCountry = useCallback((country: GlobeCountryInfo) => {
     setSelectedCountry(country);
-    setSelectedCity(null);
     setHoveredCountry(null);
 
     const state = threeRef.current;
@@ -609,45 +544,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       x: targetX,
       y: state.globeGroup.rotation.y + diff,
     };
-
-    if (autoZoom) {
-      // Zoom in to level 2.5 so cities and country borders become crystal clear
-      state.targetZoom = 2.45;
-    }
-  }, []);
-
-  // Focus directly on a specific city
-  const focusOnCity = useCallback((city: GlobeCity) => {
-    setSelectedCity(city);
-    // Find parent country
-    const parent = GLOBE_COUNTRIES.find((c) => c.id === city.countryId);
-    if (parent) {
-      setSelectedCountry(parent);
-    }
-    setHoveredCity(null);
-
-    const state = threeRef.current;
-    if (!state.globeGroup) return;
-
-    const targetY = -(city.lng * (Math.PI / 180)) - Math.PI / 2;
-    const targetX = Math.max(-1.1, Math.min(1.1, city.lat * (Math.PI / 180)));
-
-    let currentY = state.globeGroup.rotation.y;
-    const twoPi = Math.PI * 2;
-    currentY = ((currentY % twoPi) + twoPi) % twoPi;
-    let normTargetY = ((targetY % twoPi) + twoPi) % twoPi;
-
-    let diff = normTargetY - currentY;
-    if (diff > Math.PI) diff -= twoPi;
-    if (diff < -Math.PI) diff += twoPi;
-
-    state.targetRotation = {
-      x: targetX,
-      y: state.globeGroup.rotation.y + diff,
-    };
-
-    // Deep zoom into city (1.95) for ultimate detail
-    state.targetZoom = 2.0;
   }, []);
 
   // Mouse & Touch Drag Interaction Handlers
@@ -680,29 +576,11 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     threeRef.current.isDragging = false;
   };
 
-  // Zoom Controls with deep close-up support
-  const handleZoom = (delta: number) => {
-    const state = threeRef.current;
-    if (!state.camera) return;
-    const newZoom = Math.max(1.65, Math.min(5.2, state.zoomLevel + delta));
-    state.targetZoom = newZoom;
-    setCurrentZoomDist(newZoom);
-  };
-
-  // Wheel Zoom support for mouse users
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY * 0.0025;
-    handleZoom(delta);
-  };
-
-  // Reset Orientation and Zoom
+  // Reset Orientation to standard view
   const handleResetOrientation = () => {
     const state = threeRef.current;
     if (!state.globeGroup) return;
     state.targetRotation = { x: 0.28, y: -1.2 };
-    state.targetZoom = 3.8;
-    setSelectedCity(null);
   };
 
   // Filtered search list for fast navigation
@@ -714,15 +592,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         c.capitalFa.includes(searchQuery) ||
         c.capital.toLowerCase().includes(searchQuery.toLowerCase())
       );
-
-  const filteredCities = searchQuery.trim() === ''
-    ? []
-    : GLOBE_CITIES.filter((city) =>
-        city.nameFa.includes(searchQuery) ||
-        city.nameEn.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-  const isHighZoom = currentZoomDist < 3.25;
 
   return (
     <div
@@ -738,10 +607,10 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
           <Globe2 className="w-3.5 h-3.5 text-[#DFBA73]" />
-          <span>{language === 'fa' ? 'کره زمین زنده سه‌بعدی و جزئیات شهرها' : '3D Realistic Earth & Cities'}</span>
+          <span>{language === 'fa' ? 'کره زمین هوشمند سه‌بعدی و مقاصد مهاجرتی' : '3D Interactive Earth & Destinations'}</span>
         </div>
 
-        {/* Action Controls: Play/Pause, Reset, Zoom In/Out, Toggle Cities */}
+        {/* Action Controls: Play/Pause, Reset Orientation */}
         <div className="flex items-center gap-1.5 bg-black/50 border border-white/15 rounded-xl p-1 backdrop-blur-md shadow-lg">
           <button
             onClick={() => setIsAutoRotating(!isAutoRotating)}
@@ -752,62 +621,37 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
           </button>
           <button
             onClick={handleResetOrientation}
-            title="بازنشانی زاویه دید و زوم"
+            title="بازنشانی زاویه دید استاندارد"
             className="p-1.5 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={() => handleZoom(-0.55)}
-            title="بزرگ‌نمایی عمیق (+)"
-            className="p-1.5 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-          >
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => handleZoom(0.55)}
-            title="کوچک‌نمایی (-)"
-            className="p-1.5 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-          >
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setShowCitiesToggle(!showCitiesToggle)}
-            title={showCitiesToggle ? 'پنهان کردن شهرها' : 'نمایش شهرها'}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              showCitiesToggle ? 'text-emerald-400 bg-emerald-950/40' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 
-      {/* Dynamic Zoom Level Indicator & Clarity Status */}
+      {/* Globe Status & Standard View Badge */}
       <div className="w-full flex items-center justify-between px-2 mb-2 text-[11px] font-mono">
         <div className="flex items-center gap-1.5 text-[#9B9B95]">
           <Layers className="w-3 h-3 text-[#DFBA73]" />
           <span>
-            {isHighZoom
-              ? language === 'fa' ? 'حالت زوم نزدیک: مرزها و شهرها فعال' : 'Close-up: Borders & Cities Active'
-              : language === 'fa' ? 'نمای عمومی جهان (جهت مشاهده شهرها زوم کنید)' : 'Global view (Zoom in to inspect cities)'}
+            {language === 'fa' ? 'نمای استاندارد کره زمین و مقاصد مهاجرتی' : 'Standard Earth View & Migration Destinations'}
           </span>
         </div>
         <div className="flex items-center gap-1 text-[#DFBA73]">
           <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-white/10">
-            {isHighZoom ? (language === 'fa' ? 'وضوح بالا ۴K' : '4K Detail') : (language === 'fa' ? 'نمای کروی' : 'Orbit View')}
+            {language === 'fa' ? 'اندازه استاندارد ثابت' : 'Fixed Standard View'}
           </span>
         </div>
       </div>
 
-      {/* Quick Search Input for finding any country or city immediately */}
+      {/* Quick Search Input for finding any country immediately */}
       <div className="w-full relative mb-2 px-1">
         <div className="relative">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={language === 'fa' ? 'جستجوی کشور یا شهر مورد نظر...' : 'Search any country or city...'}
+            placeholder={language === 'fa' ? 'جستجوی کشور یا مقصد مورد نظر...' : 'Search destination country...'}
             className="w-full py-1.5 pl-8 pr-8 rtl:pr-8 rtl:pl-8 text-xs bg-black/40 border border-white/10 focus:border-[#DFBA73]/60 rounded-xl text-[#F4F0E8] placeholder-gray-500 outline-none backdrop-blur-md"
           />
           <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 rtl:left-auto rtl:right-2.5 top-2.5" />
@@ -822,60 +666,27 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         </div>
 
         {/* Search Dropdown Results */}
-        {(filteredDestinations.length > 0 || filteredCities.length > 0) && (
+        {filteredDestinations.length > 0 && (
           <div className="absolute top-full left-1 right-1 mt-1 p-2 bg-[#0c0e0e] border border-[#C9A96A]/40 rounded-xl shadow-2xl z-40 max-h-56 overflow-y-auto backdrop-blur-xl">
-            {filteredDestinations.length > 0 && (
-              <div className="mb-2">
-                <div className="text-[10px] text-gray-400 uppercase font-mono px-2 mb-1">
-                  {language === 'fa' ? 'کشورهای هدف' : 'Countries'}
+            <div className="text-[10px] text-gray-400 uppercase font-mono px-2 mb-1">
+              {language === 'fa' ? 'کشورهای هدف' : 'Countries'}
+            </div>
+            {filteredDestinations.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => {
+                  focusOnCountry(c);
+                  setSearchQuery('');
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white/10 text-xs text-[#F4F0E8] cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span>{c.flag}</span>
+                  <span>{language === 'fa' ? c.nameFa : c.nameEn}</span>
                 </div>
-                {filteredDestinations.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      focusOnCountry(c);
-                      setSearchQuery('');
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white/10 text-xs text-[#F4F0E8] cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{c.flag}</span>
-                      <span>{language === 'fa' ? c.nameFa : c.nameEn}</span>
-                    </div>
-                    <span className="text-[10px] text-[#DFBA73] font-mono">{c.passportRank}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {filteredCities.length > 0 && (
-              <div>
-                <div className="text-[10px] text-emerald-400 uppercase font-mono px-2 mb-1">
-                  {language === 'fa' ? 'شهرهای مهم' : 'Key Cities'}
-                </div>
-                {filteredCities.map((city) => (
-                  <button
-                    key={city.id}
-                    onClick={() => {
-                      focusOnCity(city);
-                      setSearchQuery('');
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white/10 text-xs text-[#F4F0E8] cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-3 h-3 text-emerald-400" />
-                      <span>{language === 'fa' ? city.nameFa : city.nameEn}</span>
-                      {city.isCapital && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#DFBA73]/20 text-[#DFBA73]">
-                          {language === 'fa' ? 'پایتخت' : 'Capital'}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-gray-400 font-mono">{city.population}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+                <span className="text-[10px] text-[#DFBA73] font-mono">{c.passportRank}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -908,7 +719,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
         onMouseUp={handlePointerUp}
         onMouseLeave={handlePointerUp}
-        onWheel={handleWheel}
         onTouchStart={(e) => {
           if (e.touches.length === 1) {
             handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
@@ -929,10 +739,33 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
 
         {/* 2D Projected Floating HTML Badges & Interactive Pins */}
         <div dir="ltr" className="absolute inset-0 pointer-events-none rounded-full overflow-hidden" style={{ left: 0, top: 0 }}>
+          {/* Subtle Connector Lines between 3D Ground Beacons and Anti-Collision Badges */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+            {projectedPins.map((pin) => {
+              const dist = Math.hypot(pin.badgeX - pin.x, pin.badgeY - pin.y);
+              if (dist < 10 || !pin.visible) return null;
+              return (
+                <g key={`leader-${pin.country.id}`} opacity={pin.opacity ? pin.opacity * 0.75 : 0.75}>
+                  <line
+                    x1={pin.x}
+                    y1={pin.y}
+                    x2={pin.badgeX}
+                    y2={pin.badgeY}
+                    stroke="#DFBA73"
+                    strokeWidth="1.2"
+                    strokeDasharray="2 2"
+                  />
+                  <circle cx={pin.x} cy={pin.y} r="2" fill="#DFBA73" />
+                </g>
+              );
+            })}
+          </svg>
+
           {/* Country Level Pins */}
           {projectedPins.map((pin) => {
             const isSelected = selectedCountry?.id === pin.country.id;
             const isHovered = hoveredCountry?.id === pin.country.id;
+            const badgeLabel = getGlobeBadgeName(pin.country, language);
 
             return (
               <div
@@ -940,8 +773,8 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                 style={{
                   left: 0,
                   top: 0,
-                  transform: `translate3d(${pin.x}px, ${pin.y}px, 0) translate(-50%, -100%) scale(${pin.scale})`,
-                  transformOrigin: 'bottom center',
+                  transform: `translate3d(${pin.badgeX}px, ${pin.badgeY}px, 0) translate(-50%, -50%) scale(${pin.scale})`,
+                  transformOrigin: 'center center',
                   opacity: pin.opacity ?? 1,
                   display: pin.visible ? 'block' : 'none',
                 }}
@@ -957,68 +790,23 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                   onMouseLeave={() => setHoveredCountry(null)}
                   className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] backdrop-blur-md transition-all duration-300 cursor-pointer shadow-lg ${
                     isSelected
-                      ? 'bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] text-[#080909] font-bold border border-white shadow-[0_0_20px_rgba(201,169,106,0.6)] scale-110'
+                      ? 'bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] text-[#080909] font-bold border border-white shadow-[0_0_20px_rgba(201,169,106,0.6)] scale-110 z-30'
                       : isHovered
-                      ? 'bg-black/90 text-[#DFBA73] border border-[#DFBA73] scale-105'
-                      : 'bg-black/75 text-[#F4F0E8] border border-white/20 hover:border-[#DFBA73]'
+                      ? 'bg-black/90 text-[#DFBA73] border border-[#DFBA73] scale-105 z-30'
+                      : 'bg-black/80 text-[#F4F0E8] border border-white/20 hover:border-[#DFBA73]'
                   }`}
                 >
-                  <span className="text-sm">{pin.country.flag}</span>
-                  <span className="font-semibold whitespace-nowrap">
-                    {language === 'fa' ? pin.country.nameFa : pin.country.nameEn}
+                  <span className="text-sm shrink-0">{pin.country.flag}</span>
+                  <span className="font-semibold whitespace-nowrap leading-none">
+                    {badgeLabel}
                   </span>
                   {isSelected && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping shrink-0" />
                   )}
                 </button>
               </div>
             );
           })}
-
-          {/* City Level Pins (visible when zoomed in) */}
-          {showCitiesToggle &&
-            projectedCityPins.map((pin) => {
-              const isCitySelected = selectedCity?.id === pin.city.id;
-              const isCityHovered = hoveredCity?.id === pin.city.id;
-
-              return (
-                <div
-                  key={pin.city.id}
-                  style={{
-                    left: 0,
-                    top: 0,
-                    transform: `translate3d(${pin.x}px, ${pin.y}px, 0) translate(-50%, -100%) scale(${pin.scale})`,
-                    transformOrigin: 'bottom center',
-                    opacity: pin.opacity ?? 1,
-                    display: pin.visible ? 'block' : 'none',
-                  }}
-                  className="absolute z-30 pointer-events-auto transition-opacity duration-150"
-                >
-                  <button
-                    onClick={() => {
-                      focusOnCity(pin.city);
-                      setCityModalOpen(true);
-                    }}
-                    onMouseEnter={() => setHoveredCity(pin.city)}
-                    onMouseLeave={() => setHoveredCity(null)}
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] backdrop-blur-md transition-all cursor-pointer shadow-md ${
-                      isCitySelected
-                        ? 'bg-emerald-400 text-black font-bold border border-white shadow-[0_0_15px_rgba(52,211,153,0.8)] scale-110'
-                        : isCityHovered
-                        ? 'bg-black/90 text-emerald-300 border border-emerald-400 scale-105'
-                        : pin.city.isCapital
-                        ? 'bg-black/85 text-[#DFBA73] border border-[#DFBA73]/50'
-                        : 'bg-black/80 text-emerald-200 border border-emerald-500/30'
-                    }`}
-                  >
-                    <MapPin className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                    <span className="whitespace-nowrap font-medium">
-                      {language === 'fa' ? pin.city.nameFa : pin.city.nameEn}
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
         </div>
 
         {/* Interactive Drag Hint Overlay (disappears on hover/interaction) */}
@@ -1027,40 +815,12 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
             <Compass className="w-3 h-3 text-[#DFBA73] animate-spin" />
             <span>
               {language === 'fa'
-                ? 'چرخش با ماوس یا لمس • اسکرول جهت زوم روی شهرها'
-                : 'Drag to spin • Scroll to zoom into cities'}
+                ? 'چرخش ۳۶۰ درجه با ماوس یا لمس'
+                : '360° Drag to spin'}
             </span>
           </div>
         </div>
       </div>
-
-      {/* Selected City Mini Banner (when user clicks a specific city) */}
-      {selectedCity && (
-        <div className="w-full mt-2 p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex items-center justify-between gap-3 text-xs backdrop-blur-md animate-fadeIn">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <div>
-              <div className="font-bold text-emerald-300">
-                {language === 'fa' ? selectedCity.nameFa : selectedCity.nameEn}
-                {selectedCity.isCapital && (
-                  <span className="text-[9px] mr-1.5 px-1.5 py-0.5 rounded bg-[#DFBA73]/20 text-[#DFBA73]">
-                    {language === 'fa' ? 'پایتخت' : 'Capital'}
-                  </span>
-                )}
-              </div>
-              <div className="text-[11px] text-gray-300 mt-0.5">
-                {language === 'fa' ? selectedCity.highlightFa : selectedCity.highlightEn}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setCityModalOpen(true)}
-            className="shrink-0 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 rounded-lg text-[11px] font-semibold cursor-pointer"
-          >
-            {language === 'fa' ? 'جزئیات شهر' : 'City Info'}
-          </button>
-        </div>
-      )}
 
       {/* Country Detail Mini-Card right beneath the globe */}
       {selectedCountry && (
@@ -1122,26 +882,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                   {language === 'fa' ? selectedCountry.minFundsFa : selectedCountry.minFunds}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Key Cities in this country pills */}
-          <div className="mt-3 pt-2 border-t border-white/10">
-            <div className="text-[10px] text-[#9B9B95] font-mono mb-1.5 flex items-center gap-1">
-              <Building2 className="w-3 h-3 text-emerald-400" />
-              <span>{language === 'fa' ? 'شهرهای مهم جهت اشتغال و تحصیل:' : 'Key Employment & University Cities:'}</span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {GLOBE_CITIES.filter((ct) => ct.countryId === selectedCountry.id).map((city) => (
-                <button
-                  key={city.id}
-                  onClick={() => focusOnCity(city)}
-                  className="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-950/40 text-[11px] text-gray-300 hover:text-emerald-300 border border-white/10 hover:border-emerald-500/40 flex items-center gap-1 transition-colors cursor-pointer"
-                >
-                  <MapPin className="w-2.5 h-2.5 text-emerald-400" />
-                  <span>{language === 'fa' ? city.nameFa : city.nameEn}</span>
-                </button>
-              ))}
             </div>
           </div>
 
@@ -1301,70 +1041,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>{language === 'fa' ? 'رزرو جلسه مشاوره با وکیل' : 'Book Legal Consultation'}</span>
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {/* City Detail Modal */}
-      {cityModalOpen && selectedCity && typeof document !== 'undefined' && createPortal(
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setCityModalOpen(false);
-          }}
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-[#080909]/96 backdrop-blur-2xl animate-in fade-in duration-200 overflow-y-auto"
-        >
-          <div className="relative w-full max-w-md bg-[#0e1011] border border-emerald-500/40 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] p-6 text-[#F4F0E8] my-auto">
-            <div className="flex items-start justify-between gap-3 pb-3 mb-4 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-400">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold font-farsi text-emerald-300">
-                    {language === 'fa' ? selectedCity.nameFa : selectedCity.nameEn}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
-                    <span>{selectedCity.population} جمعیت</span>
-                    {selectedCity.isCapital && (
-                      <span className="px-2 py-0.5 rounded bg-[#DFBA73]/20 text-[#DFBA73] text-[10px]">
-                        {language === 'fa' ? 'پایتخت رسمی' : 'Capital'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                id="close-city-modal-btn"
-                onClick={() => setCityModalOpen(false)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/20 text-[#F4F0E8] hover:text-red-300 border border-white/20 hover:border-red-500/40 transition-all cursor-pointer shrink-0"
-                aria-label={language === 'fa' ? 'بستن' : 'Close'}
-              >
-                <span className="text-xs font-medium">{language === 'fa' ? 'بستن' : 'Close'}</span>
-                <X className="w-4 h-4 text-emerald-400" />
-              </button>
-            </div>
-
-            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5 mb-5">
-              {language === 'fa' ? selectedCity.highlightFa : selectedCity.highlightEn}
-            </p>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setCityModalOpen(false);
-                  if (selectedCountry) {
-                    onSelectDestinationForAssessment(`${selectedCountry.nameEn} (${selectedCity.nameEn})`);
-                  }
-                }}
-                className="w-full py-2.5 bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] text-black font-bold text-xs rounded-xl shadow-lg cursor-pointer"
-              >
-                {language === 'fa' ? 'ارزیابی مهاجرت به این شهر' : 'Assess for this City'}
               </button>
             </div>
           </div>

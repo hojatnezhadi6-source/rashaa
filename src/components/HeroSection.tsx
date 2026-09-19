@@ -13,7 +13,6 @@ interface HeroSectionProps {
   onOpenQuickCall?: () => void;
   onSelectDestinationForAssessment?: (destName: string) => void;
   onBookConsultationForCountry?: (destName: string) => void;
-  isLightTheme?: boolean;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -24,7 +23,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenQuickCall,
   onSelectDestinationForAssessment,
   onBookConsultationForCountry,
-  isLightTheme = false,
 }) => {
   const t = TRANSLATIONS[language];
   const [activeFrameIndex, setActiveFrameIndex] = useState(0);
@@ -237,7 +235,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   onOpenQuickCall();
                 }
               }}
-              isLightTheme={isLightTheme}
             />
           </div>
 

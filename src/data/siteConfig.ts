@@ -150,7 +150,8 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   whatsappNumber: '+971501234567',
   consultationEmail: 'advisory@rashamohajerat.com',
   heroFrames: DEFAULT_HERO_FRAMES,
-  persianFontTheme: 'shabnam',
+  persianFont: 'vazir',
+  persianFontTheme: 'vazir',
   destinations: DESTINATIONS,
   services: SERVICES,
   whyRashaPrinciples: WHY_RASHA_PRINCIPLES,
@@ -171,6 +172,8 @@ export function getSiteConfig(): SiteConfig {
     return {
       ...DEFAULT_SITE_CONFIG,
       ...parsed,
+      persianFont: parsed.persianFont || 'vazir',
+      persianFontTheme: parsed.persianFontTheme || 'vazir',
       heroFrames: parsed.heroFrames?.length ? parsed.heroFrames : DEFAULT_HERO_FRAMES,
       destinations: parsed.destinations?.length ? parsed.destinations : DESTINATIONS,
       services: parsed.services?.length ? parsed.services : SERVICES,

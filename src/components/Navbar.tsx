@@ -9,8 +9,6 @@ import {
   PhoneCall,
   ClipboardCheck,
   MessageCircle,
-  Sun,
-  Moon,
   Calculator,
 } from 'lucide-react';
 import { Language, SiteConfig } from '../types';
@@ -27,8 +25,6 @@ interface NavbarProps {
   onOpenServices?: () => void;
   onOpenCases?: () => void;
   onNavigate: (sectionId: string) => void;
-  theme?: 'light' | 'dark';
-  onToggleTheme?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -42,8 +38,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenServices,
   onOpenCases,
   onNavigate,
-  theme = 'light',
-  onToggleTheme,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -121,27 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Clean, Minimal Right Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Theme Toggle Button (Light / Dark) */}
-            {onToggleTheme && (
-              <button
-                id="navbar-theme-toggle-btn"
-                onClick={onToggleTheme}
-                title={
-                  theme === 'light'
-                    ? (language === 'fa' ? 'تغییر به تم تیره' : 'Switch to Dark Mode')
-                    : (language === 'fa' ? 'تغییر به تم روشن' : 'Switch to Light Mode')
-                }
-                className="p-2 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] text-[#DFBA73] hover:text-[#C9A96A] rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                aria-label="Toggle Theme"
-              >
-                {theme === 'light' ? (
-                  <Moon className="w-4 h-4 text-amber-500" />
-                ) : (
-                  <Sun className="w-4 h-4 text-amber-400 animate-pulse" />
-                )}
-              </button>
-            )}
-
             {/* Language Selector */}
             <div className="relative">
               <button
@@ -173,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }`}
                     >
                       <span>{lang.label}</span>
-                      <span className="text-[10px] font-mono text-[#9B9B95]/70">{lang.flag}</span>
+                      <span className="text-[10px] font-mono opacity-70">{lang.flag}</span>
                     </button>
                   ))}
                 </div>

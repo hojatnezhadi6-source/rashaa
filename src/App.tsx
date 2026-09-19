@@ -29,9 +29,6 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('fa');
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(getSiteConfig());
 
-  // Elegant Luxury Dark Theme as preferred by user
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-
   // Modal States
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [quickCallOpen, setQuickCallOpen] = useState(false);
@@ -48,14 +45,30 @@ export default function App() {
 
   const t = TRANSLATIONS[language];
 
-  // Apply theme class to html root
+  // Enforce pure luxury dark theme & Vazirmatn font
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('theme-light');
-    } else {
-      document.documentElement.classList.remove('theme-light');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('rasha_theme');
+      // If previous siteConfig in localStorage had a different font, migrate to vazir
+      const stored = localStorage.getItem('rasha_site_config_v2');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.persianFont !== 'vazir' || parsed.persianFontTheme !== 'vazir') {
+            parsed.persianFont = 'vazir';
+            parsed.persianFontTheme = 'vazir';
+            localStorage.setItem('rasha_site_config_v2', JSON.stringify(parsed));
+            setSiteConfig((prev) => ({ ...prev, persianFont: 'vazir', persianFontTheme: 'vazir' }));
+          }
+        } catch {
+          // ignore
+        }
+      }
     }
-  }, [theme]);
+    document.documentElement.classList.remove('theme-light');
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }, []);
 
   // Set HTML document language and text direction (RTL for Persian and Arabic)
   useEffect(() => {
@@ -86,7 +99,7 @@ export default function App() {
 
     document.documentElement.classList.remove(...persianFontClasses, ...englishFontClasses);
 
-    const activeFaFont = siteConfig.persianFont || siteConfig.persianFontTheme || 'peyda';
+    const activeFaFont = siteConfig.persianFont || siteConfig.persianFontTheme || 'vazir';
     document.documentElement.classList.add(`font-theme-${activeFaFont}`);
 
     const activeEnFont = siteConfig.englishFont || siteConfig.englishFontTheme || 'sora';
@@ -113,14 +126,14 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'light' ? 'bg-[#FAF9F5] text-[#14171A]' : 'bg-[#080909] text-[#F4F0E8]'} font-sans-luxury selection:bg-[#C9A96A] selection:text-[#080909] relative transition-colors duration-300`}>
+    <div className="min-h-screen bg-[#080909] text-[#F4F0E8] font-sans-luxury selection:bg-[#C9A96A] selection:text-[#080909] relative">
       {/* Cinematic Smooth Scroll Progress Bar & Floating HUD */}
       <CinematicScrollExperience
         language={language}
         onNavigate={handleNavigate}
       />
 
-      {/* Primary Sticky / Glass Navbar with Theme Toggle, Quick Call, Services Portal & Case Records links */}
+      {/* Primary Sticky / Glass Navbar with Quick Call, Services Portal & Case Records links */}
       <Navbar
         language={language}
         siteConfig={siteConfig}
@@ -132,8 +145,6 @@ export default function App() {
         onOpenServices={() => setServicesModalOpen(true)}
         onOpenCases={() => setCasesModalOpen(true)}
         onNavigate={handleNavigate}
-        theme={theme}
-        onToggleTheme={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
       />
 
       {/* Main Page Flow with Cinematic Smooth Section Transitions */}
@@ -152,7 +163,6 @@ export default function App() {
               message: `درخواست مشاوره اختصاصی جهت اخذ اقامت و مهاجرت به کشور ${country}`,
             })
           }
-          isLightTheme={theme === 'light'}
         />
 
         {/* 2. "THE WORLD IS OPEN." Destinations Carousel & Deep Modals */}
