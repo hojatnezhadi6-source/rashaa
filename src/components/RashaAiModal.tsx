@@ -138,7 +138,7 @@ export const RashaAiModal: React.FC<RashaAiModalProps> = ({
       id="rasha-ai-modal-overlay"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#080909]/85 backdrop-blur-md animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-lg h-[72vh] sm:h-[65vh] md:h-[540px] flex flex-col bg-[#111313] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg h-[84vh] sm:h-[72vh] md:h-[550px] flex flex-col bg-[#111313] border border-white/10 rounded-2xl shadow-2xl overflow-hidden my-auto">
         {/* Luxury Header */}
         <div className="p-3.5 sm:p-4 border-b border-white/[0.08] bg-[#080909]/80 backdrop-blur-md flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -214,7 +214,7 @@ export const RashaAiModal: React.FC<RashaAiModalProps> = ({
 
               {/* Suggested Questions Chips */}
               {msg.suggestions && msg.suggestions.length > 0 && (
-                <div className="mt-2 pl-8 flex flex-wrap gap-1 max-w-xl">
+                <div className="mt-2 px-1 sm:px-6 flex flex-wrap gap-1 max-w-xl">
                   {msg.suggestions.map((sug, i) => (
                     <button
                       key={i}
@@ -230,7 +230,7 @@ export const RashaAiModal: React.FC<RashaAiModalProps> = ({
           ))}
 
           {isLoading && (
-            <div className="flex items-center gap-2 pl-8 text-[11px] text-[#9B9B95]">
+            <div className="flex items-center gap-2 px-1 sm:px-6 text-[11px] text-[#9B9B95]">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C9A96A]" />
               <span>درحال بررسی پایگاه دانش مهاجرتی...</span>
             </div>

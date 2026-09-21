@@ -4,21 +4,15 @@ import * as THREE from 'three';
 import {
   Sparkles,
   Compass,
-  RotateCcw,
-  Play,
-  Pause,
   ArrowRight,
   CheckCircle2,
   FileText,
   Clock,
   Coins,
   Award,
-  Globe2,
   X,
   ShieldCheck,
   GraduationCap,
-  Layers,
-  Search,
 } from 'lucide-react';
 import { GLOBE_COUNTRIES, GlobeCountryInfo } from '../data/globeDestinations';
 import { Language } from '../types';
@@ -53,6 +47,7 @@ const getGlobeBadgeName = (country: GlobeCountryInfo, lang: Language): string =>
   if (country.id === 'uk') return 'UK';
   if (country.id === 'uae') return 'UAE';
   if (country.id === 'usa') return 'USA';
+  if (country.id === 'new-zealand') return 'NZ';
   return country.nameEn;
 };
 
@@ -64,13 +59,12 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-  // Active selected country modal state
-  const [selectedCountry, setSelectedCountry] = useState<GlobeCountryInfo | null>(GLOBE_COUNTRIES[0]);
+  // Active selected country modal state (null initially until a country is clicked on the globe)
+  const [selectedCountry, setSelectedCountry] = useState<GlobeCountryInfo | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryInfo | null>(null);
   const [projectedPins, setProjectedPins] = useState<ProjectedPin[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Lock background scrolling and support ESC key when modal is open
   useEffect(() => {
@@ -103,6 +97,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     animId: number | null;
     isDragging: boolean;
     prevMousePos: { x: number; y: number };
+    pointerStartPos: { x: number; y: number };
     rotationVelocity: { x: number; y: number };
     targetRotation: { x: number; y: number } | null;
   }>({
@@ -117,6 +112,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     animId: null,
     isDragging: false,
     prevMousePos: { x: 0, y: 0 },
+    pointerStartPos: { x: 0, y: 0 },
     rotationVelocity: { x: 0.0012, y: 0 },
     targetRotation: null,
   });
@@ -549,6 +545,7 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
   // Mouse & Touch Drag Interaction Handlers
   const handlePointerDown = (clientX: number, clientY: number) => {
     threeRef.current.isDragging = true;
+    threeRef.current.pointerStartPos = { x: clientX, y: clientY };
     threeRef.current.prevMousePos = { x: clientX, y: clientY };
     threeRef.current.rotationVelocity = { x: 0, y: 0 };
     threeRef.current.targetRotation = null;
@@ -572,26 +569,37 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
     threeRef.current.prevMousePos = { x: clientX, y: clientY };
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (clientX?: number, clientY?: number) => {
+    // If it was a quick tap/click without dragging, detect if a country pin was clicked
+    if (clientX !== undefined && clientY !== undefined && canvasContainerRef.current) {
+      const start = threeRef.current.pointerStartPos;
+      const dragDist = Math.hypot(clientX - start.x, clientY - start.y);
+      if (dragDist < 8) {
+        const rect = canvasContainerRef.current.getBoundingClientRect();
+        const clickX = clientX - rect.left;
+        const clickY = clientY - rect.top;
+
+        // Find closest visible pin to the click point
+        let closestPin: ProjectedPin | null = null;
+        let minDist = 36; // 36px click threshold around pin or badge
+        for (const pin of projectedPins) {
+          if (!pin.visible) continue;
+          const dBeacon = Math.hypot(pin.x - clickX, pin.y - clickY);
+          const dBadge = Math.hypot(pin.badgeX - clickX, pin.badgeY - clickY);
+          const d = Math.min(dBeacon, dBadge);
+          if (d < minDist) {
+            minDist = d;
+            closestPin = pin;
+          }
+        }
+
+        if (closestPin) {
+          focusOnCountry(closestPin.country);
+        }
+      }
+    }
     threeRef.current.isDragging = false;
   };
-
-  // Reset Orientation to standard view
-  const handleResetOrientation = () => {
-    const state = threeRef.current;
-    if (!state.globeGroup) return;
-    state.targetRotation = { x: 0.28, y: -1.2 };
-  };
-
-  // Filtered search list for fast navigation
-  const filteredDestinations = searchQuery.trim() === ''
-    ? []
-    : GLOBE_COUNTRIES.filter((c) =>
-        c.nameFa.includes(searchQuery) ||
-        c.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.capitalFa.includes(searchQuery) ||
-        c.capital.toLowerCase().includes(searchQuery.toLowerCase())
-      );
 
   return (
     <div
@@ -599,126 +607,14 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
       id="interactive-earth-globe"
       className="relative w-full max-w-[560px] mx-auto flex flex-col items-center select-none"
     >
-      {/* Top Header Pill Bar: Real 3D Planet Tag & Controls */}
-      <div className="w-full flex items-center justify-between mb-2.5 px-2 gap-2 flex-wrap">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-[#C9A96A]/40 backdrop-blur-md text-xs font-mono text-[#DFBA73] shadow-[0_0_20px_rgba(201,169,106,0.25)]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-          </span>
-          <Globe2 className="w-3.5 h-3.5 text-[#DFBA73]" />
-          <span>{language === 'fa' ? 'کره زمین هوشمند سه‌بعدی و مقاصد مهاجرتی' : '3D Interactive Earth & Destinations'}</span>
-        </div>
-
-        {/* Action Controls: Play/Pause, Reset Orientation */}
-        <div className="flex items-center gap-1.5 bg-black/50 border border-white/15 rounded-xl p-1 backdrop-blur-md shadow-lg">
-          <button
-            onClick={() => setIsAutoRotating(!isAutoRotating)}
-            title={isAutoRotating ? 'توقف چرخش خودکار' : 'شروع چرخش خودکار'}
-            className="p-1.5 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-          >
-            {isAutoRotating ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            onClick={handleResetOrientation}
-            title="بازنشانی زاویه دید استاندارد"
-            className="p-1.5 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Globe Status & Standard View Badge */}
-      <div className="w-full flex items-center justify-between px-2 mb-2 text-[11px] font-mono">
-        <div className="flex items-center gap-1.5 text-[#9B9B95]">
-          <Layers className="w-3 h-3 text-[#DFBA73]" />
-          <span>
-            {language === 'fa' ? 'نمای استاندارد کره زمین و مقاصد مهاجرتی' : 'Standard Earth View & Migration Destinations'}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-[#DFBA73]">
-          <span className="text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-white/10">
-            {language === 'fa' ? 'اندازه استاندارد ثابت' : 'Fixed Standard View'}
-          </span>
-        </div>
-      </div>
-
-      {/* Quick Search Input for finding any country immediately */}
-      <div className="w-full relative mb-2 px-1">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={language === 'fa' ? 'جستجوی کشور یا مقصد مورد نظر...' : 'Search destination country...'}
-            className="w-full py-1.5 pl-8 pr-8 rtl:pr-8 rtl:pl-8 text-xs bg-black/40 border border-white/10 focus:border-[#DFBA73]/60 rounded-xl text-[#F4F0E8] placeholder-gray-500 outline-none backdrop-blur-md"
-          />
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 rtl:left-auto rtl:right-2.5 top-2.5" />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-2.5 text-gray-400 hover:text-white"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-
-        {/* Search Dropdown Results */}
-        {filteredDestinations.length > 0 && (
-          <div className="absolute top-full left-1 right-1 mt-1 p-2 bg-[#0c0e0e] border border-[#C9A96A]/40 rounded-xl shadow-2xl z-40 max-h-56 overflow-y-auto backdrop-blur-xl">
-            <div className="text-[10px] text-gray-400 uppercase font-mono px-2 mb-1">
-              {language === 'fa' ? 'کشورهای هدف' : 'Countries'}
-            </div>
-            {filteredDestinations.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  focusOnCountry(c);
-                  setSearchQuery('');
-                }}
-                className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white/10 text-xs text-[#F4F0E8] cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <span>{c.flag}</span>
-                  <span>{language === 'fa' ? c.nameFa : c.nameEn}</span>
-                </div>
-                <span className="text-[10px] text-[#DFBA73] font-mono">{c.passportRank}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Select Country Filter Pills */}
-      <div className="w-full flex items-center gap-1.5 overflow-x-auto pb-2 px-1 no-scrollbar mb-2">
-        {GLOBE_COUNTRIES.map((c) => {
-          const isActive = selectedCountry?.id === c.id;
-          return (
-            <button
-              key={c.id}
-              onClick={() => focusOnCountry(c)}
-              className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-300 cursor-pointer ${
-                isActive
-                  ? 'bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] text-[#080909] font-bold shadow-[0_0_15px_rgba(201,169,106,0.4)] scale-105'
-                  : 'bg-black/40 text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/10 border border-white/10'
-              }`}
-            >
-              <span>{c.flag}</span>
-              <span>{language === 'fa' ? c.nameFa : c.nameEn}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* 3D WebGL Realistic Earth Canvas Container */}
       <div
-        className="relative w-[270px] min-[360px]:w-[300px] min-[420px]:w-[350px] sm:w-[440px] md:w-[480px] h-[270px] min-[360px]:h-[300px] min-[420px]:h-[350px] sm:h-[440px] md:h-[480px] max-w-full mx-auto rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing overflow-visible group touch-pan-y"
+        className="relative w-[270px] min-[360px]:w-[300px] min-[420px]:w-[350px] sm:w-[440px] md:w-[480px] h-[270px] min-[360px]:h-[300px] min-[420px]:h-[350px] sm:h-[440px] md:h-[480px] max-w-full mx-auto rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing overflow-visible group touch-none"
         onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
         onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
-        onMouseUp={handlePointerUp}
-        onMouseLeave={handlePointerUp}
+        onMouseUp={(e) => handlePointerUp(e.clientX, e.clientY)}
+        onMouseLeave={() => handlePointerUp()}
         onTouchStart={(e) => {
           if (e.touches.length === 1) {
             handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
@@ -729,7 +625,13 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
             handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
           }
         }}
-        onTouchEnd={handlePointerUp}
+        onTouchEnd={(e) => {
+          if (e.changedTouches.length === 1) {
+            handlePointerUp(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+          } else {
+            handlePointerUp();
+          }
+        }}
       >
         {/* Soft Radial Outer Space Glow behind Earth */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0a1e3f]/20 via-[#103060]/10 to-transparent blur-3xl pointer-events-none" />
@@ -784,7 +686,6 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
                 <button
                   onClick={() => {
                     focusOnCountry(pin.country);
-                    setModalOpen(true);
                   }}
                   onMouseEnter={() => setHoveredCountry(pin.country)}
                   onMouseLeave={() => setHoveredCountry(null)}
@@ -822,9 +723,34 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
         </div>
       </div>
 
-      {/* Country Detail Mini-Card right beneath the globe */}
+      {/* Mobile-Friendly Quick Country Selector Carousel */}
+      <div className="w-full mt-2 sm:mt-3 px-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar scroll-smooth">
+          {GLOBE_COUNTRIES.map((country) => {
+            const isSelected = selectedCountry?.id === country.id;
+            return (
+              <button
+                key={country.id}
+                onClick={() => focusOnCountry(country)}
+                className={`flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs shrink-0 transition-all cursor-pointer backdrop-blur-md ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#DFBA73] to-[#C9A96A] text-[#080909] font-bold shadow-[0_0_12px_rgba(201,169,106,0.5)] scale-105'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#D1D1C7] border border-white/10 hover:border-[#DFBA73]/40'
+                }`}
+              >
+                <span className="text-sm">{country.flag}</span>
+                <span className="whitespace-nowrap">
+                  {language === 'fa' ? country.nameFa : country.nameEn}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Country Detail Mini-Card right beneath the globe (Appears when any country is clicked) */}
       {selectedCountry && (
-        <div className="w-full mt-3 luxury-glass p-4 rounded-2xl border border-[#C9A96A]/30 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div className="w-full mt-3 luxury-glass p-4 rounded-2xl border border-[#C9A96A]/30 backdrop-blur-xl shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-3 duration-300">
           {/* Subtle gold decorative glow line */}
           <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[#DFBA73] to-transparent" />
 
@@ -848,13 +774,22 @@ export const InteractiveGlobe: React.FC<InteractiveGlobeProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={() => setModalOpen(true)}
-              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#DFBA73] border border-[#DFBA73]/40 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>{language === 'fa' ? 'پرونده کامل و آزمون‌ها' : 'Full Dossier'}</span>
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#DFBA73] border border-[#DFBA73]/40 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{language === 'fa' ? 'پرونده کامل' : 'Full Dossier'}</span>
+              </button>
+              <button
+                onClick={() => setSelectedCountry(null)}
+                title={language === 'fa' ? 'بستن مشخصات' : 'Close Details'}
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl border border-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Golden Benefit Quote */}

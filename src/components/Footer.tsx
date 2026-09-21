@@ -119,11 +119,6 @@ export const Footer: React.FC<FooterProps> = ({
               </span>
               <ul className="space-y-2 text-[#9B9B95]">
                 <li>
-                  <button onClick={() => onNavigate('process')} className="hover:text-[#C9A96A] transition-colors cursor-pointer">
-                    {language === 'fa' ? 'نقشه راه و اصول راشا' : 'Roadmap & Principles'}
-                  </button>
-                </li>
-                <li>
                   <button
                     onClick={() => (onOpenCases ? onOpenCases() : onNavigate('contact'))}
                     className="hover:text-[#C9A96A] transition-colors cursor-pointer"

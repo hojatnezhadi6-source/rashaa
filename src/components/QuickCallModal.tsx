@@ -56,16 +56,16 @@ export const QuickCallModal: React.FC<QuickCallModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#080909]/85 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#080909]/85 backdrop-blur-xl animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-lg bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden"
+        className="relative w-full max-w-lg max-h-[92vh] flex flex-col bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C9A96A] to-transparent" />
 
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#C9A96A]/10 border border-[#C9A96A]/40 flex items-center justify-center text-[#C9A96A]">
               <PhoneCall className="w-4 h-4 animate-pulse" />
@@ -93,7 +93,7 @@ export const QuickCallModal: React.FC<QuickCallModalProps> = ({
         </div>
 
         {/* Modal Content */}
-        <div className="p-4 sm:p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-5 space-y-4 overflow-y-auto">
           {submitted ? (
             <div className="py-6 text-center space-y-4 animate-in zoom-in-95 duration-300">
               <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">

@@ -11,8 +11,6 @@ import { getSiteConfig } from './data/siteConfig';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { DestinationsSection } from './components/DestinationsSection';
-import { BlueprintSection } from './components/BlueprintSection';
-import { ExecutivePortalsBar } from './components/ExecutivePortalsBar';
 import { InteractiveAssessmentHub } from './components/InteractiveAssessmentHub';
 import { ConsultationSection } from './components/ConsultationSection';
 import { Footer } from './components/Footer';
@@ -172,31 +170,14 @@ export default function App() {
           onSelectDestinationForAssessment={handleSelectDestinationForAssessment}
         />
 
-        {/* 3. EXECUTIVE PORTALS: Dedicated 1-Click Access to Practice Areas & Case Records */}
-        <ExecutivePortalsBar
-          language={language}
-          onOpenServices={() => setServicesModalOpen(true)}
-          onOpenCases={() => setCasesModalOpen(true)}
-          onOpenAssessmentHub={() => handleNavigate('assessment-hub')}
-        />
-
-        {/* 4. SMART IMMIGRATION INTELLIGENCE SUITE: Free Assessment Quiz & Points Chance Calculator */}
+        {/* 3. SMART IMMIGRATION INTELLIGENCE SUITE: Free Assessment Quiz & Points Chance Calculator */}
         <InteractiveAssessmentHub
           language={language}
           onOpenConsultation={handleOpenConsultation}
           onNavigateToContact={() => handleNavigate('contact')}
         />
 
-        {/* 5. THE RASHA BLUEPRINT: Unified Interactive 6-Stage Roadmap & Core Principles */}
-        <BlueprintSection
-          language={language}
-          whyRashaPrinciples={siteConfig.whyRashaPrinciples}
-          processSteps={siteConfig.processSteps}
-          onBookConsultation={() => handleNavigate('contact')}
-          onExploreServices={() => setServicesModalOpen(true)}
-        />
-
-        {/* 6. "YOUR NEXT CHAPTER STARTS HERE." Private Advisory Consultation Desk */}
+        {/* 4. "YOUR NEXT CHAPTER STARTS HERE." Private Advisory Consultation Desk */}
         <ConsultationSection
           language={language}
           siteConfig={siteConfig}
@@ -217,23 +198,23 @@ export default function App() {
       />
 
       {/* Floating Action Controls on Bottom Corner */}
-      <div className="fixed bottom-6 right-6 rtl:right-auto rtl:left-6 z-40 flex flex-col gap-3">
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 rtl:right-auto rtl:left-3 rtl:sm:left-6 z-40 flex flex-col gap-2 sm:gap-3">
         {/* Quick Priority Call Floating Pill */}
         <button
           id="floating-quick-call-btn"
           onClick={() => setQuickCallOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 bg-[#0d1612] hover:bg-[#12231c] text-[#F4F0E8] border border-emerald-500/50 hover:border-emerald-400 rounded-2xl shadow-2xl shadow-black/90 transition-all duration-300 hover:scale-105 cursor-pointer"
+          className="group relative flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 bg-[#0d1612]/95 backdrop-blur-md hover:bg-[#12231c] text-[#F4F0E8] border border-emerald-500/50 hover:border-emerald-400 rounded-xl sm:rounded-2xl shadow-xl shadow-black/80 transition-all duration-300 hover:scale-105 cursor-pointer"
           aria-label="Quick Priority Call"
         >
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-            <PhoneCall className="w-3.5 h-3.5 animate-pulse" />
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <PhoneCall className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-pulse" />
           </div>
           <div className="flex flex-col text-left rtl:text-right">
-            <span className="text-[11px] font-bold text-emerald-300">
+            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-300">
               {language === 'fa' ? 'تماس فوری' : 'Quick Call'}
             </span>
-            <span className="text-[9px] text-emerald-400/80 font-mono">
-              {language === 'fa' ? 'پاسخگویی در ۱۵ دقیقه' : '15-min callback'}
+            <span className="text-[8px] sm:text-[9px] text-emerald-400/80 font-mono hidden min-[360px]:block">
+              {language === 'fa' ? 'پاسخگویی سریع' : '15-min callback'}
             </span>
           </div>
         </button>
@@ -242,22 +223,22 @@ export default function App() {
         <button
           id="floating-rasha-ai-btn"
           onClick={() => setAiModalOpen(true)}
-          className="group relative flex items-center gap-3 px-4 py-3 bg-[#111313] hover:bg-[#181a1a] text-[#F4F0E8] border border-[#C9A96A]/60 hover:border-[#C9A96A] rounded-2xl shadow-2xl shadow-black/80 transition-all duration-300 hover:scale-105 cursor-pointer"
+          className="group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-[#111313]/95 backdrop-blur-md hover:bg-[#181a1a] text-[#F4F0E8] border border-[#C9A96A]/60 hover:border-[#C9A96A] rounded-xl sm:rounded-2xl shadow-xl shadow-black/80 transition-all duration-300 hover:scale-105 cursor-pointer"
           aria-label="Ask RASHA AI"
         >
-          <span className="absolute -inset-0.5 bg-gradient-to-r from-[#C9A96A]/30 to-amber-500/20 blur-xs group-hover:opacity-100 transition-opacity -z-10 animate-pulse rounded-2xl" />
-          <div className="relative">
-            <div className="w-7 h-7 bg-[#181a1a] border border-[#C9A96A]/40 rounded-lg flex items-center justify-center text-[#C9A96A]">
-              <Sparkles className="w-3.5 h-3.5 text-[#C9A96A] group-hover:rotate-12 transition-transform" />
+          <span className="absolute -inset-0.5 bg-gradient-to-r from-[#C9A96A]/30 to-amber-500/20 blur-xs group-hover:opacity-100 transition-opacity -z-10 animate-pulse rounded-xl sm:rounded-2xl" />
+          <div className="relative shrink-0">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#181a1a] border border-[#C9A96A]/40 rounded-lg flex items-center justify-center text-[#C9A96A]">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A96A] group-hover:rotate-12 transition-transform" />
             </div>
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#111313]" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-1 sm:ring-2 ring-[#111313]" />
           </div>
 
           <div className="flex flex-col text-left rtl:text-right">
-            <span className="text-xs uppercase font-bold text-[#F4F0E8] tracking-[0.14em]">
+            <span className="text-[10px] sm:text-xs uppercase font-bold text-[#F4F0E8] tracking-[0.1em] sm:tracking-[0.14em]">
               {t.askAiCTA}
             </span>
-            <span className="text-[9px] uppercase font-mono tracking-wider text-[#C9A96A]">
+            <span className="text-[8px] sm:text-[9px] uppercase font-mono tracking-wider text-[#C9A96A] hidden min-[360px]:block">
               24/7 Global Advisor
             </span>
           </div>

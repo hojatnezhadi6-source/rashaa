@@ -58,7 +58,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: language === 'fa' ? 'تست و محاسبه شانس' : 'Assessment & Score', id: 'assessment-hub' },
     { label: language === 'fa' ? 'حوزه‌های خدمات' : t.navServices, id: 'services', isModal: 'services' },
     { label: language === 'fa' ? 'پرونده‌های موفق' : 'Case Records', id: 'cases', isModal: 'cases' },
-    { label: t.navProcess, id: 'process' },
     { label: t.navContact, id: 'contact' },
   ];
 
@@ -101,20 +100,49 @@ export const Navbar: React.FC<NavbarProps> = ({
             : 'bg-gradient-to-b from-[#080909]/80 to-transparent py-4 sm:py-5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 sm:px-12 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 md:px-12 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo */}
           <button
             id="brand-logo-btn"
             onClick={() => handleNavClick('hero')}
-            className="flex items-center gap-2 text-left group focus:outline-none cursor-pointer shrink-0"
+            className="flex items-center gap-2 text-left rtl:text-right group focus:outline-none cursor-pointer shrink"
           >
-            <div className="text-base sm:text-xl tracking-[0.18em] sm:tracking-[0.25em] font-light text-[#F4F0E8] group-hover:text-[#C9A96A] transition-colors truncate">
+            <div
+              className="tracking-[0.14em] sm:tracking-[0.25em] font-light text-[#F4F0E8] group-hover:text-[#C9A96A] transition-colors text-base min-[380px]:text-lg sm:text-xl md:text-[22px] truncate"
+            >
               RASHA <span className="opacity-50">MOHAJERAT</span>
             </div>
           </button>
 
+          {/* Top Main Navigation Links (Visible directly at the top of the site) */}
+          <nav
+            id="top-main-navigation-bar"
+            className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md shadow-inner"
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                id={`top-nav-link-${item.id}`}
+                onClick={() => handleNavClick(item)}
+                className="px-3 py-1.5 rounded-full text-xs lg:text-[13px] font-sans-luxury text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/[0.06] transition-all cursor-pointer whitespace-nowrap font-medium"
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
           {/* Clean, Minimal Right Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Quick Priority Call CTA */}
+            <button
+              id="navbar-quick-call-cta"
+              onClick={onOpenQuickCall}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer shadow-sm hover:border-emerald-500/60"
+            >
+              <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{language === 'fa' ? 'مشاوره فوری' : 'Quick Call'}</span>
+            </button>
+
             {/* Language Selector */}
             <div className="relative">
               <button

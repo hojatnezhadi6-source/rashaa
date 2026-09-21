@@ -78,7 +78,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             </p>
           </div>
 
-          {/* Category Filter Pills & Carousel Arrows */}
+          {/* Category Filter Pills */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar">
               {categories.map((cat) => (
@@ -95,33 +95,35 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                 </button>
               ))}
             </div>
-
-            <div className="hidden md:flex items-center gap-2 ml-4">
-              <button
-                onClick={() => scroll('left')}
-                className="p-3 rounded-full bg-[#111313] border border-white/10 text-[#9B9B95] hover:text-[#F4F0E8] hover:border-[#C9A96A]/60 hover:shadow-[0_0_15px_rgba(201,169,106,0.2)] transition-all cursor-pointer"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => scroll('right')}
-                className="p-3 rounded-full bg-[#111313] border border-white/10 text-[#9B9B95] hover:text-[#F4F0E8] hover:border-[#C9A96A]/60 hover:shadow-[0_0_15px_rgba(201,169,106,0.2)] transition-all cursor-pointer"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Horizontal Cinematic Scroll Track */}
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-6 sm:gap-8 overflow-x-auto px-6 sm:px-8 max-w-full no-scrollbar scroll-smooth snap-x snap-mandatory"
-        style={{ scrollbarWidth: 'none' }}
-      >
+      {/* Horizontal Cinematic Scroll Track with Side Nav Arrows */}
+      <div className="relative group/carousel px-2 sm:px-4">
+        {/* Left Arrow Button (visible on sm+) */}
+        <button
+          onClick={() => scroll('left')}
+          className="hidden sm:flex absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full bg-[#080909]/85 hover:bg-[#C9A96A] text-[#F4F0E8] hover:text-[#080909] border border-[#C9A96A]/50 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(201,169,106,0.3)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer items-center justify-center"
+          aria-label={language === 'fa' ? 'اسکرول به چپ' : 'Scroll left'}
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+        </button>
+
+        {/* Right Arrow Button (visible on sm+) */}
+        <button
+          onClick={() => scroll('right')}
+          className="hidden sm:flex absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full bg-[#080909]/85 hover:bg-[#C9A96A] text-[#F4F0E8] hover:text-[#080909] border border-[#C9A96A]/50 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(201,169,106,0.3)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer items-center justify-center"
+          aria-label={language === 'fa' ? 'اسکرول به راست' : 'Scroll right'}
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+        </button>
+
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-4 sm:gap-8 overflow-x-auto px-4 sm:px-16 max-w-full no-scrollbar scroll-smooth snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none' }}
+        >
         {filteredDestinations.map((dest, idx) => (
           <div
             key={dest.id}
@@ -181,7 +183,10 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                     dest.name
                   )}
                 </h3>
-                <p className="text-xs text-[#B3B3AB] font-sans-luxury line-clamp-2 mt-1 leading-relaxed">
+                <p
+                  className="text-xs text-[#B3B3AB] font-sans-luxury line-clamp-2 mt-1 leading-relaxed"
+                  style={{ fontSize: '15px' }}
+                >
                   {language === 'fa' && dest.taglineFarsi ? dest.taglineFarsi : dest.tagline}
                 </p>
               </div>
@@ -189,26 +194,41 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               {/* Quick Info Grid */}
               <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-white/[0.1] text-xs">
                 <div>
-                  <span className="text-[#9B9B95] block text-[10px] uppercase tracking-wider">
+                  <span
+                    className="text-[#9B9B95] block uppercase tracking-wider"
+                    style={{ fontSize: '15px' }}
+                  >
                     {language === 'fa' ? 'زمان پردازش' : 'Processing'}
                   </span>
-                  <span className="text-[#F4F0E8] font-medium font-mono text-[11px]">
+                  <span
+                    className="text-[#F4F0E8] font-medium font-mono block mt-0.5"
+                    style={{ fontSize: '16px' }}
+                  >
                     {language === 'fa' && dest.processingTimeFarsi ? dest.processingTimeFarsi : dest.processingTime}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#9B9B95] block text-[10px] uppercase tracking-wider">
+                  <span
+                    className="text-[#9B9B95] block uppercase tracking-wider"
+                    style={{ fontSize: '15px' }}
+                  >
                     {language === 'fa' ? 'کف سرمایه / سطح هزینه' : 'Capital Tier'}
                   </span>
-                  <span className="text-[#E8CA8C] font-semibold text-[11px]">
+                  <span
+                    className="text-[#E8CA8C] font-semibold block mt-0.5"
+                    style={{ fontSize: '13px' }}
+                  >
                     {language === 'fa' && dest.costBracketFarsi ? dest.costBracketFarsi : dest.costBracket}
                   </span>
                 </div>
               </div>
 
               {/* Explore CTA */}
-              <div className="pt-1 flex items-center justify-between">
-                <span className="text-xs font-sans-luxury tracking-widest uppercase text-[#C9A96A] group-hover:text-[#F4F0E8] transition-colors flex items-center gap-2 font-medium">
+              <div
+                className="pt-1 flex items-center justify-between"
+                style={{ fontSize: '18px' }}
+              >
+                <span className="font-sans-luxury tracking-widest uppercase text-[#C9A96A] group-hover:text-[#F4F0E8] transition-colors flex items-center gap-2 font-medium text-sm sm:text-base">
                   <span>{t.exploreDestination}</span>
                 </span>
                 <div className="w-8 h-8 rounded-full bg-white/[0.08] group-hover:bg-[#C9A96A] group-hover:text-[#080909] group-hover:shadow-[0_0_15px_rgba(201,169,106,0.5)] flex items-center justify-center transition-all duration-300">
@@ -218,6 +238,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             </div>
           </div>
         ))}
+        </div>
       </div>
 
       {/* Deep Destination Detail Modal */}

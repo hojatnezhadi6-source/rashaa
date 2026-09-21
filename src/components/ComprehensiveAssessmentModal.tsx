@@ -108,30 +108,30 @@ export const ComprehensiveAssessmentModal: React.FC<ComprehensiveAssessmentModal
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#080909]/90 backdrop-blur-xl animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-[#080909]/90 backdrop-blur-xl animate-in fade-in duration-200 overflow-y-auto">
       <div
-        className="relative w-full max-w-3xl bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
+        className="relative w-full max-w-3xl max-h-[92vh] flex flex-col bg-[#111313] border border-[#C9A96A]/30 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#DFBA73] via-[#C9A96A] to-[#B38F4E]" />
 
         {/* Modal Header */}
-        <div className="p-6 sm:p-8 border-b border-white/[0.08] flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#C9A96A]/20 to-transparent border border-[#C9A96A]/40 flex items-center justify-center text-[#C9A96A]">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+        <div className="p-4 sm:p-6 md:p-8 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#C9A96A]/20 to-transparent border border-[#C9A96A]/40 flex items-center justify-center text-[#C9A96A] shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-mono tracking-widest text-[#C9A96A]">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[9px] sm:text-[10px] uppercase font-mono tracking-widest text-[#C9A96A]">
                   {language === 'fa' ? 'ارزیابی تخصصی و ارسال پرونده به وکلای راشا' : 'Comprehensive Dossier & Assessment'}
                 </span>
-                <span className="px-2 py-0.5 rounded text-[9px] bg-[#C9A96A]/10 text-[#C9A96A] border border-[#C9A96A]/20 font-mono">
+                <span className="px-2 py-0.5 rounded text-[8px] sm:text-[9px] bg-[#C9A96A]/10 text-[#C9A96A] border border-[#C9A96A]/20 font-mono">
                   رایگان و محرمانه
                 </span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-serif-display font-light text-[#F4F0E8]">
+              <h3 className="text-lg sm:text-2xl font-serif-display font-light text-[#F4F0E8]">
                 {language === 'fa' ? 'فرم ارزیابی جامع شرایط مهاجرت' : 'Global Mobility Assessment Form'}
               </h3>
             </div>
@@ -139,7 +139,7 @@ export const ComprehensiveAssessmentModal: React.FC<ComprehensiveAssessmentModal
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-[#9B9B95] hover:text-[#F4F0E8] transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-[#9B9B95] hover:text-[#F4F0E8] transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -147,7 +147,7 @@ export const ComprehensiveAssessmentModal: React.FC<ComprehensiveAssessmentModal
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 sm:p-8 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto">
           {submitted ? (
             <div className="py-6 text-center space-y-6 animate-in zoom-in-95 duration-300">
               <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-emerald-400">
