@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles,
   Globe,
-  Menu,
-  X,
-  ArrowUpRight,
   Shield,
   PhoneCall,
-  ClipboardCheck,
-  MessageCircle,
-  Calculator,
 } from 'lucide-react';
 import { Language, SiteConfig } from '../types';
 import { TRANSLATIONS } from '../data/translations';
@@ -29,10 +22,10 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   language,
-  siteConfig,
+  siteConfig: _siteConfig,
   onLanguageChange,
-  onOpenAi,
-  onOpenAssessment,
+  onOpenAi: _onOpenAi,
+  onOpenAssessment: _onOpenAssessment,
   onOpenQuickCall,
   onOpenAdmin,
   onOpenServices,
@@ -40,7 +33,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const t = TRANSLATIONS[language];
@@ -79,7 +71,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         onNavigate(target.id);
       }
     }
-    setMobileMenuOpen(false);
   };
 
   const languages: { code: Language; label: string; flag: string }[] = [
@@ -91,13 +82,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Sleek, Clean, Uncluttered Luxury Navbar */}
+      {/* Sleek, Clean, Uncluttered Luxury Navbar with Main Navigation exclusively at the top */}
       <header
         id="main-navbar"
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? 'bg-[#080909]/92 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-2xl'
-            : 'bg-gradient-to-b from-[#080909]/80 to-transparent py-4 sm:py-5'
+            ? 'bg-[#080909]/95 backdrop-blur-md border-b border-white/[0.08] py-2.5 sm:py-3 shadow-2xl'
+            : 'bg-gradient-to-b from-[#080909]/90 via-[#080909]/80 to-transparent py-3 sm:py-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-8 md:px-12 flex items-center justify-between gap-2 sm:gap-4">
@@ -105,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="brand-logo-btn"
             onClick={() => handleNavClick('hero')}
-            className="flex items-center gap-2 text-left rtl:text-right group focus:outline-none cursor-pointer shrink"
+            className="flex items-center gap-2 text-left rtl:text-right group focus:outline-none cursor-pointer shrink-0"
           >
             <div
               className="tracking-[0.14em] sm:tracking-[0.25em] font-light text-[#F4F0E8] group-hover:text-[#C9A96A] transition-colors text-base min-[380px]:text-lg sm:text-xl md:text-[22px] truncate"
@@ -114,17 +105,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </button>
 
-          {/* Top Main Navigation Links (Visible directly at the top of the site) */}
+          {/* Top Main Navigation Links: Exclusively at the very top of the site */}
           <nav
             id="top-main-navigation-bar"
-            className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md shadow-inner"
+            className="hidden sm:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md shadow-inner"
           >
             {navItems.map((item) => (
               <button
                 key={item.id}
                 id={`top-nav-link-${item.id}`}
                 onClick={() => handleNavClick(item)}
-                className="px-3 py-1.5 rounded-full text-xs lg:text-[13px] font-sans-luxury text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/[0.06] transition-all cursor-pointer whitespace-nowrap font-medium"
+                className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs lg:text-[13px] font-sans-luxury text-[#D1D1C7] hover:text-[#DFBA73] hover:bg-white/[0.06] transition-all cursor-pointer whitespace-nowrap font-medium"
               >
                 {item.label}
               </button>
@@ -137,10 +128,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="navbar-quick-call-cta"
               onClick={onOpenQuickCall}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer shadow-sm hover:border-emerald-500/60"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer shadow-sm hover:border-emerald-500/60"
             >
               <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{language === 'fa' ? 'مشاوره فوری' : 'Quick Call'}</span>
+              <span className="hidden min-[400px]:inline">{language === 'fa' ? 'مشاوره فوری' : 'Quick Call'}</span>
             </button>
 
             {/* Language Selector */}
@@ -191,139 +182,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Shield className="w-3.5 h-3.5" />
             </button>
-
-            {/* Luxury Menu Toggle Button */}
-            <button
-              id="main-menu-toggle"
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 border border-white/10 hover:border-[#C9A96A]/60 bg-white/[0.03] hover:bg-white/[0.06] text-[#F4F0E8] hover:text-[#C9A96A] rounded-lg transition-all cursor-pointer font-sans-luxury text-xs tracking-wider"
-              aria-label="Open Navigation Menu"
-            >
-              <Menu className="w-4 h-4 text-[#C9A96A]" />
-              <span className="text-[11px] font-medium hidden min-[400px]:inline">
-                {language === 'fa' ? 'منو' : 'Menu'}
-              </span>
-            </button>
           </div>
+        </div>
+
+        {/* Mobile Navigation Strip: directly and cleanly visible right at the very top of the site on smaller screens */}
+        <div className="sm:hidden px-3 pt-2 pb-0.5 overflow-x-auto no-scrollbar">
+          <nav
+            id="top-main-navigation-bar-mobile"
+            className="flex items-center gap-1.5 py-0.5 min-w-max mx-auto justify-center"
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                id={`top-nav-mobile-link-${item.id}`}
+                onClick={() => handleNavClick(item)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-sans-luxury text-[#D1D1C7] hover:text-[#DFBA73] bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-all cursor-pointer whitespace-nowrap font-medium"
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
-
-      {/* Luxury Slide-Over Navigation Drawer */}
-      {mobileMenuOpen && (
-        <div
-          id="mobile-drawer-overlay"
-          className="fixed inset-0 z-50 bg-[#080909]/80 backdrop-blur-md flex justify-end rtl:justify-start animate-in fade-in duration-200"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <div
-            id="mobile-drawer"
-            className="relative w-full max-w-sm sm:max-w-md h-full bg-[#101212] border-l rtl:border-l-0 rtl:border-r border-white/10 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto shadow-2xl animate-in slide-in-from-right rtl:slide-in-from-left duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header of Drawer */}
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-              <div className="text-xs uppercase tracking-[0.25em] text-[#C9A96A] font-mono">
-                {language === 'fa' ? 'فهرست بخش‌های راشا' : 'Navigation Menu'}
-              </div>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-full bg-white/[0.05] border border-white/10 text-[#9B9B95] hover:text-[#F4F0E8] cursor-pointer"
-                aria-label="Close menu"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Navigation Links */}
-            <div className="flex flex-col gap-2 py-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className="text-left rtl:text-right text-base sm:text-lg font-serif-display text-[#F4F0E8] hover:text-[#C9A96A] transition-colors py-2.5 px-3 rounded-xl hover:bg-white/[0.03] flex items-center justify-between group cursor-pointer"
-                >
-                  <span>{item.label}</span>
-                  <span className="text-xs text-white/20 group-hover:text-[#C9A96A] group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all">
-                    ←
-                  </span>
-                </button>
-              ))}
-            </div>
-
-          <div className="flex flex-col gap-3 pt-6 border-t border-white/10 mt-6">
-            {/* Mobile Action Buttons */}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenQuickCall();
-              }}
-              className="w-full py-3 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs uppercase tracking-wider rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md"
-            >
-              <PhoneCall className="w-4 h-4 text-emerald-400 animate-pulse" />
-              <span>{language === 'fa' ? 'تماس سریع و فوری با مشاور' : 'Priority Quick Call'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAi();
-              }}
-              className="w-full py-3 bg-[#111313] hover:bg-[#161818] border border-[#C9A96A]/40 text-[#DFBA73] text-xs uppercase tracking-wider rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md"
-            >
-              <Sparkles className="w-4 h-4 text-[#C9A96A]" />
-              <span>{language === 'fa' ? 'گفتگو با مشاور هوش مصنوعی راشا ۲۴/۷' : 'Ask RASHA AI Advisor 24/7'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAssessment();
-              }}
-              className="w-full py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-[#D1D1C7] text-xs uppercase tracking-wider rounded-xl font-medium flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ClipboardCheck className="w-4 h-4 text-[#C9A96A]" />
-              <span>{language === 'fa' ? 'فرم ارزیابی جامع پرونده' : 'Complete Assessment Form'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAdmin();
-              }}
-              className="w-full py-2 bg-black/40 border border-white/[0.06] text-[#888] hover:text-[#C9A96A] text-[11px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Shield className="w-3.5 h-3.5 text-[#C9A96A]" />
-              <span>{language === 'fa' ? 'ورود به پنل مدیریت سایت' : 'Admin Suite'}</span>
-            </button>
-
-            {/* Language Selector */}
-            <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
-              <span className="text-xs text-[#9B9B95] uppercase tracking-wider">
-                {language === 'fa' ? 'زبان / Language' : 'Language'}
-              </span>
-              <div className="flex gap-1.5">
-                {languages.map((l) => (
-                  <button
-                    key={l.code}
-                    onClick={() => {
-                      onLanguageChange(l.code);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`px-2.5 py-1 text-xs rounded-lg border transition-all cursor-pointer ${
-                      language === l.code
-                        ? 'border-[#C9A96A] text-[#DFBA73] bg-[#C9A96A]/10 font-bold'
-                        : 'border-white/10 text-[#9B9B95] hover:border-white/20'
-                    }`}
-                  >
-                    {l.flag}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
     </>
   );
 };
